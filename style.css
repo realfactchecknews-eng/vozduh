@@ -1,0 +1,21 @@
+:root{--b:#0a3d91;--b2:#1560d4;--bg:#fff;--t:#111;--m:#667}
+*{box-sizing:border-box}body{margin:0;font:17px/1.6 Georgia,serif;color:var(--t);background:var(--bg)}
+.top{background:var(--b);color:#fff;font:13px system-ui;padding:6px 16px;display:flex;justify-content:space-between}
+header{border-bottom:3px solid var(--b);padding:18px 16px;text-align:center}
+.logo{font:900 44px/1 system-ui;letter-spacing:6px;color:var(--b);text-decoration:none}
+.logo span{color:var(--b2)}nav{font:600 14px system-ui;margin-top:12px;display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
+nav a{color:var(--t);text-decoration:none;text-transform:uppercase}nav a:hover{color:var(--b2)}
+main{max-width:760px;margin:0 auto;padding:24px 16px}
+.tag{display:inline-block;background:var(--b2);color:#fff;font:700 12px system-ui;padding:3px 8px;text-transform:uppercase}
+h1{font:800 34px/1.2 system-ui;margin:12px 0}.lead{font-size:20px;color:#333}
+.meta{font:13px system-ui;color:var(--m);display:flex;gap:16px;flex-wrap:wrap;border-top:1px solid #dde;border-bottom:1px solid #dde;padding:8px 0;margin:16px 0}
+.photo{aspect-ratio:16/9;background:linear-gradient(135deg,#0b1a33,#1560d4);color:#fff;display:grid;place-items:center;font:700 22px system-ui;position:relative}
+.photo .live{position:absolute;top:12px;left:12px;background:#e11;padding:2px 8px;font-size:13px}
+figcaption{font:13px system-ui;color:var(--m);margin-top:6px}
+blockquote{border-left:4px solid var(--b2);margin:20px 0;padding:4px 16px;font-size:20px;font-style:italic}
+.reacts{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}.reacts span{background:#eef3fc;border:1px solid #cfdcf5;border-radius:20px;padding:4px 12px;font:600 15px system-ui}
+footer{background:var(--b);color:#cdd9f0;font:13px system-ui;text-align:center;padding:20px 16px;margin-top:40px}
+.card{display:grid;grid-template-columns:200px 1fr;gap:16px;padding:18px 0;border-bottom:1px solid #dde;text-decoration:none;color:inherit}
+.card .photo{font-size:13px}.card h2{font:800 22px/1.25 system-ui;margin:6px 0}.card:hover h2{color:var(--b2)}
+.card p{margin:0;color:#444;font-size:16px}
+@media(max-width:560px){.card{grid-template-columns:1fr}}
