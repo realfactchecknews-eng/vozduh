@@ -1,8 +1,12 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Создать новость — Воздух</title><link rel="stylesheet" href="style.css?v=9"></head><body>
+<title>Создать новость — Воздух</title><link rel="stylesheet" href="style.css?v=10"></head><body>
 <main class="wrap"><h1 style="font:900 40px Inter,system-ui">Создать новость</h1>
 <p style="color:var(--m)">Заполни поля — справа сразу видно, как получится. Потом скопируй ссылку или скачай готовый файл.</p>
 <div class="grid"><form id="f" class="mk">
+<div class="ai"><b>🤖 Придумать за тебя</b>
+<label style="margin-top:8px">Тема новости<input id="topic" placeholder="Влад сходил в зал один раз"></label>
+<div class="share" style="margin:10px 0 0"><button type="button" id="gen">Сгенерировать текст</button><button type="button" id="genimg">Сгенерировать фото</button></div>
+<p style="font:12px Inter;color:var(--m);margin:8px 0 0">Работает через наш Worker. Пароль спросится один раз.</p></div>
 <label>Заголовок<input name="title" required value="Друг случайно стал лицом новой пенсионной реформы"></label>
 <label>Подзаголовок<textarea name="lead" rows="2">Он до сих пор не знает об этом.</textarea></label>
 <label>Раздел<select name="tag"><option>Стримы</option><option>Скандалы</option><option selected>Общество</option><option>Расследования</option></select></label>
@@ -13,11 +17,11 @@
 <label>Текст (абзацы с новой строки)<textarea name="body" rows="7">Как стало известно «Воздуху», всё началось в четверг.
 Очевидцы утверждают, что он ничего не подозревал до последнего.</textarea></label>
 <label>Просмотры<input name="views" value="1,4 млн"></label>
-<div class="share" style="margin:0"><button type="button" id="link">Скопировать ссылку</button><button type="button" id="dl">Скачать файл</button></div>
+<div class="share" style="margin:0"><button type="button" id="link">Скопировать ссылку</button><button type="button" id="dl">Скачать файл</button><button type="button" id="post">Опубликовать в канал</button></div>
 <p style="font:13px Inter;color:var(--m)">Ссылка работает сразу, но в Telegram развернётся с общей картинкой «Воздуха». Файл — это настоящая страница со своим превью: пришли его мне, и я выложу на сайт.</p>
 </form>
 <div><div class="sect">Предпросмотр</div><div id="pv" class="pv"></div></div></div></main>
-<script src="news.js?v=9"></script><script src="app.js?v=9"></script><script>
+<script src="news.js?v=10"></script><script src="app.js?v=10"></script><script>
 const F=()=>{const d=Object.fromEntries(new FormData(f));d.slug='new';d.time='только что';
  d.body=(d.body||'').split('\n').filter(Boolean);if(d.quote)d.body.splice(1,0,'QUOTE');return d};
 const draw=()=>{const x=F();pv.innerHTML=`<span class="tag red">${esc(x.flag)}</span><h2 style="font:900 26px Inter">${esc(x.title)}</h2>
@@ -30,8 +34,8 @@ dl.onclick=()=>{const x=F(),abs=u=>/^https?:/.test(u)?u:SITE+u;
  const h=`<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(x.title)} — Воздух</title><meta property="og:site_name" content="Воздух"><meta property="og:title" content="${esc(x.title)}">
 <meta property="og:description" content="${esc(x.lead)}"><meta property="og:image" content="${esc(abs(x.img))}"><meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=9"></head><body><main class="wrap"><article id="a"></article></main>
-<script src="news.js?v=9"><\/script><script src="app.js?v=9"><\/script><script>
+<link rel="stylesheet" href="style.css?v=10"></head><body><main class="wrap"><article id="a"></article></main>
+<script src="news.js?v=10"><\/script><script src="app.js?v=10"><\/script><script>
 const x=${JSON.stringify(x)};
 a.innerHTML=\`<span class="tag red">\${esc(x.flag)}</span> <span class="tag">\${esc(x.tag)}</span><h1>\${esc(x.title)}</h1><p class="lead">\${esc(x.lead)}</p>
 <div class="byline"><div class="av">В</div><div><b>Редакция «Воздуха»</b><br>\${esc(x.time)} · 👁 \${esc(x.views)}</div>
@@ -41,4 +45,21 @@ a.innerHTML=\`<span class="tag red">\${esc(x.flag)}</span> <span class="tag">\${
 wire(x.slug);watch();<\/script></body></html>`;
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([h],{type:'text/html'}));
  a.download=(x.title.slice(0,30).replace(/[^\wа-яА-Я]+/g,'-')||'news')+'.html';a.click();toast('Файл скачан')};
+
+const ask=()=>{let k=localStorage.getItem('vk');if(!k){k=prompt('Пароль редакции');k&&localStorage.setItem('vk',k)}return k};
+const call=async(p,d)=>{const k=ask();if(!k)throw Error('нет пароля');
+  const r=await fetch(API+p,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...d,key:k})});
+  const j=await r.json();if(!r.ok){if(r.status===403)localStorage.removeItem('vk');throw Error(j.error||'ошибка')}return j};
+const busy=(b,on,t)=>{b.disabled=on;b.textContent=on?'Секунду…':t};
+gen.onclick=async()=>{if(!topic.value.trim())return toast('Напиши тему');busy(gen,1);
+  try{const d=await call('/text',{topic:topic.value});
+    f.title.value=d.title;f.lead.value=d.lead;f.body.value=d.body.join('\n');f.quote.value=d.quote||'';
+    f.views.value=d.views||'1,2 млн';f.flag.value=d.flag||'Эксклюзив';if(d.tag)f.tag.value=d.tag;
+    window.AIC=d.comments||[];draw();toast('Новость готова')}catch(e){toast(e.message)}finally{busy(gen,0,'Сгенерировать текст')}};
+genimg.onclick=async()=>{const p=topic.value.trim()||f.title.value;busy(genimg,1);
+  try{const d=await call('/image',{prompt:p});f.img.value=d.image;draw();toast('Фото готово')}
+  catch(e){toast(e.message)}finally{busy(genimg,0,'Сгенерировать фото')}};
+post.onclick=async()=>{const x=F();busy(post,1);
+  try{await call('/post',{title:x.title,lead:x.lead,url:pack(),image:x.img&&(x.img.startsWith('data:')?x.img:(/^https?:/.test(x.img)?x.img:SITE+x.img))});
+    toast('Опубликовано в канале')}catch(e){toast(e.message)}finally{busy(post,0,'Опубликовать в канал')}};
 watch();</script></body></html>

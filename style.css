@@ -82,3 +82,6 @@ footer a{color:#8d96aa}footer a:hover{color:#fff}footer .wrap{padding-top:32px;p
 .ev time{font:800 14px Inter;color:var(--b2)}.ev p{margin:0 0 4px}.ev a{font:600 14px Inter;color:var(--m)}
 .ev a:hover{color:var(--b2)}
 @media(max-width:860px){.pv{position:static}.tgbtn{margin-left:0}}
+.ai{background:linear-gradient(135deg,#eef4ff,#f7f2ff);border:1px solid #d8e2f8;border-radius:12px;padding:16px}
+.ai b{font:800 15px Inter,system-ui}.ai button{background:var(--b2)}
+.mk button:disabled{opacity:.6;cursor:wait}

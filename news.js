@@ -1,6 +1,7 @@
 // Лента «Воздуха». Новая новость = новый объект в начало массива.
 const SITE='https://realfactchecknews-eng.github.io/vozduh/';
 const TG='vozduhnews24';   // имя телеграм-канала
+const API='https://vozduh.realfactchecknews.workers.dev'; // Cloudflare Worker: текст, картинки, публикация
 const NEWS=[{
  slug:'melstroy', tag:'Стримы', flag:'Эксклюзив', time:'07:25', views:'1,2 млн', img:'stream.jpg',
  title:'Мелстрой заметил «Лысого» на стриме и разнёс его в прямом эфире',
