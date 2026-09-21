@@ -1,5 +1,5 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Редакция — Воздух</title><meta name="robots" content="noindex"><link rel="stylesheet" href="style.css?v=14"></head><body>
+<title>Редакция — Воздух</title><meta name="robots" content="noindex"><link rel="stylesheet" href="style.css?v=15"></head><body>
 <main class="wrap" id="root" style="max-width:1280px">
 <div id="gate" style="max-width:340px;margin:60px auto"><h1 style="font:900 28px Inter">Вход в редакцию</h1>
 <form id="lg" class="cform"><input type="password" id="pw" placeholder="Пароль" autofocus><button>Войти</button></form></div>
@@ -52,7 +52,7 @@
  <div id="list" class="pubs"></div>
 </div></div></div></main>
 
-<script src="news.js?v=14"></script><script src="app.js?v=14"></script><script>
+<script src="news.js?v=15"></script><script src="app.js?v=15"></script><script>
 const K=()=>localStorage.getItem('vk');
 const call=async(p,d)=>{const r=await fetch(API+p,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...d,key:K()})});
  const j=await r.json();if(!r.ok)throw Error(j.error||'ошибка');return j};
@@ -66,7 +66,6 @@ lg.onsubmit=async e=>{e.preventDefault();localStorage.setItem('vk',pw.value);
  show()};
 const show=()=>{gate.hidden=1;panel.hidden=0;draw();loadList()};
 exit.onclick=()=>{localStorage.removeItem('vk');location.reload()};
-if(K())show();
 
 // ---- текст
 gen.onclick=async()=>{if(!topic.value.trim())return toast('Напиши тему');busy(gen,1);
@@ -115,4 +114,5 @@ async function loadList(){const r=await fetch(API+'/list').then(r=>r.json());
   <a href="article.html?n=${n.slug}" target="_blank">открыть</a> · <a href="#" data-del="${n.slug}">удалить</a></div></div>`).join('')||'<p style="color:var(--m)">Пока пусто</p>';
  list.querySelectorAll('[data-del]').forEach(a=>a.onclick=async e=>{e.preventDefault();
   if(confirm('Удалить новость с сайта?')){await call('/delete',{slug:a.dataset.del});loadList();toast('Удалено')}});}
+if(K())show();
 </script></body></html>
