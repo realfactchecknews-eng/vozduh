@@ -1,0 +1,19 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Воздух</title><meta property="og:site_name" content="Воздух"><meta property="og:image" content="https://realfactchecknews-eng.github.io/vozduh/stream.jpg">
+<meta name="twitter:card" content="summary_large_image"><link rel="stylesheet" href="style.css?v=4"></head><body>
+<main class="wrap"><article id="a"></article>
+<div id="more" class="wrap" style="padding:0"></div></main>
+<script src="news.js?v=4"></script><script src="app.js?v=4"></script><script>
+const hash=location.hash.slice(1);
+const x=hash?JSON.parse(decodeURIComponent(escape(atob(hash)))):(NEWS.find(n=>n.slug===get('n'))||NEWS[0]);
+document.title=x.title+' — Воздух';
+a.innerHTML=`<span class="tag red">${esc(x.flag||'Новость')}</span> <span class="tag">${esc(x.tag)}</span>
+<h1>${esc(x.title)}</h1><p class="lead">${esc(x.lead)}</p>
+<div class="byline"><div class="av">В</div><div><b>Редакция «Воздуха»</b><br>${esc(x.time)} · 👁 ${esc(x.views||'')} · ⏱ 2 мин</div>
+<div class="share"><a id="tg" target="_blank">Telegram</a><button id="copy">Скопировать ссылку</button></div></div>
+${x.img?`<figure class="reveal"><div class="pic"><img src="${x.img}" alt=""></div><figcaption>${esc(x.cap||'')}</figcaption></figure>`:''}
+`+x.body.map((p,i)=>p==='QUOTE'?`<blockquote class="reveal">${esc(x.quote)}</blockquote>`:p==='REACTS'?reacts(x.reacts||[]):`<p${i===0?' class="drop"':''}>${p}</p>`).join('')
++comments(x.slug,x.comments||[]);
+if(!hash)more.innerHTML='<div class="sect" style="margin-top:48px">Читайте также</div><div class="cards">'+NEWS.filter(n=>n!==x).slice(0,3).map(n=>card(n)).join('')+'</div>';
+wire(x.slug);watch();
+</script></body></html>

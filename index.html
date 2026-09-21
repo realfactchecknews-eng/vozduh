@@ -1,25 +1,15 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Воздух — новости</title><meta property="og:title" content="Воздух — новости"><meta property="og:image" content="stream.jpg"><link rel="stylesheet" href="style.css?v=3"></head><body>
-<div class="top"><span id="d"></span><span>USD <b>82,4</b> <span class="up">▲</span> · EUR <b>95,1</b> <span class="dn">▼</span> · Москва <b>+14°</b></span><span>👁 <b id="v">184 312</b> читают сейчас</span></div>
-<header><div class="bar"><a class="logo" href="./"><i></i>ВОЗ<span>ДУХ</span></a>
-<nav><a href="./">Главное</a><a href="#">Стримы</a><a href="#">Скандалы</a><a href="#">Общество</a><a href="#">Расследования</a><a href="#">Мнения</a></nav></div>
-<div class="ticker"><b>Срочно</b><div><span>Мелстрой заметил «Лысого» на стриме</span><span>Под постами канала — 10 тысяч негативных реакций</span><span>Автор канала отказался от комментариев</span><span>«Воздух» следит за ситуацией</span><span>Мелстрой заметил «Лысого» на стриме</span><span>Под постами канала — 10 тысяч негативных реакций</span><span>Автор канала отказался от комментариев</span><span>«Воздух» следит за ситуацией</span></div></div></header>
-<main class="wrap"><div class="grid">
-<a class="hero reveal" href="melstroy.html"><div class="pic"><img src="stream.jpg" alt=""></div>
-<span class="tag red" style="margin-top:16px">Эксклюзив</span>
-<h2>Мелстрой заметил «Лысого» на стриме и разнёс его в прямом эфире</h2>
-<p>Под постами канала «Лысый разговаривает» появились тысячи негативных реакций. Автор хранит молчание.</p>
-<div class="meta"><span>Стримы</span><span>07:25</span><span>👁 1,2 млн</span></div></a>
-<aside class="reveal"><h4>Самое читаемое</h4><div class="side">
-<a href="melstroy.html">Мелстрой разнёс «Лысого» в прямом эфире</a>
-<a>В Москве голубь занял очередь в МФЦ и отказался уходить</a>
-<a>Учёные: 87% людей открывают холодильник «просто посмотреть»</a>
-<a>Житель Подмосковья третий год «вот-вот начнёт бегать»</a>
-<a>Опрос: большинство россиян не читает пользовательские соглашения</a></div></aside></div>
-<div class="sect" style="margin-top:48px">Лента</div>
-<div class="cards">
-<a class="card reveal" href="melstroy.html"><div class="pic"><img src="stream.jpg" alt=""></div><h3>Реакции под постом превысили просмотры в 270 раз</h3><p>Эксперты называют это беспрецедентным</p></a>
-<a class="card reveal"><span class="tag">Общество</span><h3>Россиянин пообещал «завтра точно лечь пораньше»</h3><p>Обещание дано в 03:40</p></a>
-<a class="card reveal"><span class="tag">Мнения</span><h3>«Нихера не пощу, но сидите тут»: почему это работает</h3><p>Колонка медиааналитика</p></a>
-</div></main>
-<footer><div class="wrap"><a class="logo" href="./">ВОЗ<span>ДУХ</span></a><span>© 2026 «Воздух». Сатирическое издание, все новости выдуманы.<br>18+ · Редакция: vozduh@example</span></div></footer>
-<div class="toast"></div><script src="app.js?v=3"></script></body></html>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Воздух — новости</title><meta name="description" content="Сатирическое издание «Воздух»">
+<meta property="og:site_name" content="Воздух"><meta property="og:title" content="Воздух — новости">
+<meta property="og:description" content="Сатирическое издание. Все новости выдуманы."><meta property="og:image" content="https://realfactchecknews-eng.github.io/vozduh/stream.jpg">
+<meta name="twitter:card" content="summary_large_image"><link rel="stylesheet" href="style.css?v=4"></head><body>
+<main class="wrap"><div class="grid"><div id="lead"></div>
+<aside class="reveal"><h4>Самое читаемое</h4><div class="side" id="top"></div>
+<div class="promo reveal"><b>«Воздух» в Telegram</b><p>Срочные новости раньше всех</p><a class="tgbtn" id="promo" target="_blank">Подписаться</a></div></aside></div>
+<div class="sect" style="margin-top:48px">Лента</div><div class="cards" id="feed"></div></main>
+<script src="news.js?v=4"></script><script src="app.js?v=4"></script><script>
+lead.innerHTML=card(NEWS[0],1);
+top.innerHTML=NEWS.concat(NEWS).slice(0,5).map(x=>`<a href="article.html?n=${x.slug}">${esc(x.title)}</a>`).join('');
+feed.innerHTML=NEWS.slice(1).map(x=>card(x)).join('')||'<p>Скоро</p>';
+promo.href=tgLink;watch();
+</script></body></html>

@@ -1,0 +1,7 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Раздел — Воздух</title><link rel="stylesheet" href="style.css?v=4"></head><body>
+<main class="wrap"><h1 id="h" style="font:900 40px Inter,system-ui"></h1><div class="cards" id="feed"></div></main>
+<script src="news.js?v=4"></script><script src="app.js?v=4"></script><script>
+const t=get('t','Стримы');document.title=t+' — Воздух';h.textContent=t;
+const l=NEWS.filter(n=>n.tag===t);feed.innerHTML=l.map(x=>card(x)).join('')||'<p style="color:var(--m)">В этом разделе пока пусто. Скоро будет.</p>';watch();
+</script></body></html>

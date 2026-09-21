@@ -1,0 +1,44 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Создать новость — Воздух</title><link rel="stylesheet" href="style.css?v=4"></head><body>
+<main class="wrap"><h1 style="font:900 40px Inter,system-ui">Создать новость</h1>
+<p style="color:var(--m)">Заполни поля — справа сразу видно, как получится. Потом скопируй ссылку или скачай готовый файл.</p>
+<div class="grid"><form id="f" class="mk">
+<label>Заголовок<input name="title" required value="Друг случайно стал лицом новой пенсионной реформы"></label>
+<label>Подзаголовок<textarea name="lead" rows="2">Он до сих пор не знает об этом.</textarea></label>
+<label>Раздел<select name="tag"><option>Стримы</option><option>Скандалы</option><option selected>Общество</option><option>Расследования</option></select></label>
+<label>Плашка<input name="flag" value="Эксклюзив"></label>
+<label>Ссылка на фото<input name="img" placeholder="https://... или stream.jpg" value="stream.jpg"></label>
+<label>Подпись к фото<input name="cap" value="Фото: соцсети"></label>
+<label>Цитата<input name="quote" value="«Я вообще мимо проходил»"></label>
+<label>Текст (абзацы с новой строки)<textarea name="body" rows="7">Как стало известно «Воздуху», всё началось в четверг.
+Очевидцы утверждают, что он ничего не подозревал до последнего.</textarea></label>
+<label>Просмотры<input name="views" value="1,4 млн"></label>
+<div class="share" style="margin:0"><button type="button" id="link">Скопировать ссылку</button><button type="button" id="dl">Скачать файл</button></div>
+<p style="font:13px Inter;color:var(--m)">Ссылка работает сразу, но в Telegram развернётся с общей картинкой «Воздуха». Файл — это настоящая страница со своим превью: пришли его мне, и я выложу на сайт.</p>
+</form>
+<div><div class="sect">Предпросмотр</div><div id="pv" class="pv"></div></div></div></main>
+<script src="news.js?v=4"></script><script src="app.js?v=4"></script><script>
+const F=()=>{const d=Object.fromEntries(new FormData(f));d.slug='new';d.time='только что';
+ d.body=(d.body||'').split('\n').filter(Boolean);if(d.quote)d.body.splice(1,0,'QUOTE');return d};
+const draw=()=>{const x=F();pv.innerHTML=`<span class="tag red">${esc(x.flag)}</span><h2 style="font:900 26px Inter">${esc(x.title)}</h2>
+ <p class="lead" style="font-size:17px">${esc(x.lead)}</p>${x.img?`<div class="pic"><img src="${esc(x.img)}" alt=""></div>`:''}
+ ${x.body.map(p=>p==='QUOTE'?`<blockquote style="font-size:17px">${esc(x.quote)}</blockquote>`:`<p style="font-size:16px">${esc(p)}</p>`).join('')}`};
+f.oninput=draw;draw();
+const pack=()=>location.origin+location.pathname.replace('make.html','article.html')+'#'+btoa(unescape(encodeURIComponent(JSON.stringify(F()))));
+link.onclick=()=>navigator.clipboard.writeText(pack()).then(()=>toast('Ссылка скопирована'));
+dl.onclick=()=>{const x=F(),abs=u=>/^https?:/.test(u)?u:SITE+u;
+ const h=`<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${esc(x.title)} — Воздух</title><meta property="og:site_name" content="Воздух"><meta property="og:title" content="${esc(x.title)}">
+<meta property="og:description" content="${esc(x.lead)}"><meta property="og:image" content="${esc(abs(x.img))}"><meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="style.css?v=4"></head><body><main class="wrap"><article id="a"></article></main>
+<script src="news.js?v=4"><\/script><script src="app.js?v=4"><\/script><script>
+const x=${JSON.stringify(x)};
+a.innerHTML=\`<span class="tag red">\${esc(x.flag)}</span> <span class="tag">\${esc(x.tag)}</span><h1>\${esc(x.title)}</h1><p class="lead">\${esc(x.lead)}</p>
+<div class="byline"><div class="av">В</div><div><b>Редакция «Воздуха»</b><br>\${esc(x.time)} · 👁 \${esc(x.views)}</div>
+<div class="share"><a id="tg" target="_blank">Telegram</a><button id="copy">Скопировать ссылку</button></div></div>
+\${x.img?\`<figure class="reveal"><div class="pic"><img src="\${x.img}"></div><figcaption>\${esc(x.cap||'')}</figcaption></figure>\`:''}\`
++x.body.map((p,i)=>p==='QUOTE'?\`<blockquote class="reveal">\${esc(x.quote)}</blockquote>\`:\`<p\${i===0?' class="drop"':''}>\${esc(p)}</p>\`).join('')+comments(x.slug,[]);
+wire(x.slug);watch();<\/script></body></html>`;
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([h],{type:'text/html'}));
+ a.download=(x.title.slice(0,30).replace(/[^\wа-яА-Я]+/g,'-')||'news')+'.html';a.click();toast('Файл скачан')};
+watch();</script></body></html>
