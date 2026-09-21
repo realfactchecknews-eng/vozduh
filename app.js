@@ -19,7 +19,7 @@ document.body.insertAdjacentHTML('beforeend',`<footer><div class="wrap">
 
 let n=184312;setInterval(()=>$('#v').textContent=(n+=Math.floor(Math.random()*40-12)).toLocaleString('ru'),1500);
 const io=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting&&e.target.classList.add('on')),{threshold:.1});
-const watch=()=>$$('.reveal:not(.on)').forEach(el=>io.observe(el));
+const watch=()=>{$$('.reveal:not(.on)').forEach(el=>io.observe(el));setTimeout(()=>$$('.reveal').forEach(el=>innerHeight>el.getBoundingClientRect().top&&el.classList.add('on')),300)};
 addEventListener('scroll',()=>{const h=document.documentElement;$('#progress').style.width=h.scrollTop/(h.scrollHeight-h.clientHeight||1)*100+'%'});
 const toast=t=>{const e=$('.toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),1800)};
 
