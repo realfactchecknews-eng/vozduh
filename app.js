@@ -33,10 +33,11 @@ function cover(src,title,cb){const im=new Image();im.crossOrigin='anonymous';im.
  const gr=g.createLinearGradient(0,H*.35,0,H);gr.addColorStop(0,'rgba(10,19,32,0)');gr.addColorStop(1,'rgba(10,19,32,.92)');
  g.fillStyle=gr;g.fillRect(0,0,W,H);
  g.fillStyle='#e0162b';g.fillRect(48,48,132,52);g.fillStyle='#fff';g.font='800 30px Inter,system-ui';g.fillText('● LIVE',62,85);
- const LG='900 38px Inter,Arial Black,system-ui';g.font=LG;
- const w1=g.measureText('ВОЗ').width,w2=g.measureText('ДУХ').width;
+ g.font='900 38px Inter,Arial Black,system-ui';
+ const w1=g.measureText('ВОЗ').width;
  g.fillStyle='#fff';g.fillText('ВОЗ',48,H-46);g.fillStyle='#4b93ff';g.fillText('ДУХ',48+w1,H-46);
- g.fillStyle='rgba(255,255,255,.6)';g.font='600 22px Inter,system-ui';g.fillText('vozduhnews.ru',48+w1+w2+22,H-46);
+ g.font='600 22px Inter,system-ui';g.fillStyle='rgba(255,255,255,.6)';g.textAlign='right';
+ g.fillText('vozduhnews.ru',W-48,H-46);g.textAlign='left';
  g.fillStyle='#fff';g.font='900 56px Inter,system-ui';
  const words=String(title).split(' ');let line='',y=H-150;const lines=[];
  words.forEach(wd=>{const t=line?line+' '+wd:wd;if(g.measureText(t).width>W-96){lines.push(line);line=wd}else line=t});
