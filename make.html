@@ -1,5 +1,5 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Создать новость — Воздух</title><link rel="stylesheet" href="style.css?v=10"></head><body>
+<title>Создать новость — Воздух</title><link rel="stylesheet" href="style.css?v=11"></head><body>
 <main class="wrap"><h1 style="font:900 40px Inter,system-ui">Создать новость</h1>
 <p style="color:var(--m)">Заполни поля — справа сразу видно, как получится. Потом скопируй ссылку или скачай готовый файл.</p>
 <div class="grid"><form id="f" class="mk">
@@ -21,8 +21,9 @@
 <p style="font:13px Inter;color:var(--m)">Ссылка работает сразу, но в Telegram развернётся с общей картинкой «Воздуха». Файл — это настоящая страница со своим превью: пришли его мне, и я выложу на сайт.</p>
 </form>
 <div><div class="sect">Предпросмотр</div><div id="pv" class="pv"></div></div></div></main>
-<script src="news.js?v=10"></script><script src="app.js?v=10"></script><script>
-const F=()=>{const d=Object.fromEntries(new FormData(f));d.slug='new';d.time='только что';
+<script src="news.js?v=11"></script><script src="app.js?v=11"></script><script>
+const F=()=>{const d=Object.fromEntries(new FormData(f));d.slug='new';d.time='только что';d.comments=window.AIC||[];
+ d.reacts=[['🤮',2500],['👎',2500],['🤬',2400],['💩',2400],['🖕',3],['❤️',2]].map(([e,n])=>[e,Math.max(1,Math.round(n*(.5+Math.random())))]);
  d.body=(d.body||'').split('\n').filter(Boolean);if(d.quote)d.body.splice(1,0,'QUOTE');return d};
 const draw=()=>{const x=F();pv.innerHTML=`<span class="tag red">${esc(x.flag)}</span><h2 style="font:900 26px Inter">${esc(x.title)}</h2>
  <p class="lead" style="font-size:17px">${esc(x.lead)}</p>${x.img?`<div class="pic"><img src="${esc(x.img)}" alt=""></div>`:''}
@@ -34,8 +35,8 @@ dl.onclick=()=>{const x=F(),abs=u=>/^https?:/.test(u)?u:SITE+u;
  const h=`<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(x.title)} — Воздух</title><meta property="og:site_name" content="Воздух"><meta property="og:title" content="${esc(x.title)}">
 <meta property="og:description" content="${esc(x.lead)}"><meta property="og:image" content="${esc(abs(x.img))}"><meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="style.css?v=10"></head><body><main class="wrap"><article id="a"></article></main>
-<script src="news.js?v=10"><\/script><script src="app.js?v=10"><\/script><script>
+<link rel="stylesheet" href="style.css?v=11"></head><body><main class="wrap"><article id="a"></article></main>
+<script src="news.js?v=11"><\/script><script src="app.js?v=11"><\/script><script>
 const x=${JSON.stringify(x)};
 a.innerHTML=\`<span class="tag red">\${esc(x.flag)}</span> <span class="tag">\${esc(x.tag)}</span><h1>\${esc(x.title)}</h1><p class="lead">\${esc(x.lead)}</p>
 <div class="byline"><div class="av">В</div><div><b>Редакция «Воздуха»</b><br>\${esc(x.time)} · 👁 \${esc(x.views)}</div>
@@ -59,7 +60,11 @@ gen.onclick=async()=>{if(!topic.value.trim())return toast('Напиши тему
 genimg.onclick=async()=>{const p=topic.value.trim()||f.title.value;busy(genimg,1);
   try{const d=await call('/image',{prompt:p});f.img.value=d.image;draw();toast('Фото готово')}
   catch(e){toast(e.message)}finally{busy(genimg,0,'Сгенерировать фото')}};
+const stamp=src=>new Promise(r=>src?cover(/^(data:|https?:)/.test(src)?src:SITE+src,f.title.value,r):r(''));
 post.onclick=async()=>{const x=F();busy(post,1);
-  try{await call('/post',{title:x.title,lead:x.lead,url:pack(),image:x.img&&(x.img.startsWith('data:')?x.img:(/^https?:/.test(x.img)?x.img:SITE+x.img))});
-    toast('Опубликовано в канале')}catch(e){toast(e.message)}finally{busy(post,0,'Опубликовать в канал')}};
+  try{const pic=await stamp(x.img);
+    const s=await call('/save',{news:{...x,img:pic||x.img},site:SITE});
+    await call('/post',{title:x.title,lead:x.lead,url:s.url,image:pic});
+    toast('Опубликовано: канал + сайт');setTimeout(()=>location.href=s.url,1200)}
+  catch(e){toast(e.message)}finally{busy(post,0,'Опубликовать в канал')}};
 watch();</script></body></html>

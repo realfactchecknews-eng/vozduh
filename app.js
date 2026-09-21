@@ -23,6 +23,25 @@ const watch=()=>{$$('.reveal:not(.on)').forEach(el=>io.observe(el));setTimeout((
 addEventListener('scroll',()=>{const h=document.documentElement;$('#progress').style.width=h.scrollTop/(h.scrollHeight-h.clientHeight||1)*100+'%'});
 const toast=t=>{const e=$('.toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),1800)};
 
+// новости из хранилища Worker + статичные
+const ready = fetch(API+'/list').then(r=>r.json()).then(l=>{if(Array.isArray(l))NEWS.unshift(...l)}).catch(()=>{});
+
+// обложка в едином стиле: фото + затемнение, плашка ВОЗДУХ, LIVE и заголовок
+function cover(src,title,cb){const im=new Image();im.crossOrigin='anonymous';im.onload=()=>{
+ const W=1600,H=900,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
+ const k=Math.max(W/im.width,H/im.height);g.drawImage(im,(W-im.width*k)/2,(H-im.height*k)/2,im.width*k,im.height*k);
+ const gr=g.createLinearGradient(0,H*.35,0,H);gr.addColorStop(0,'rgba(10,19,32,0)');gr.addColorStop(1,'rgba(10,19,32,.92)');
+ g.fillStyle=gr;g.fillRect(0,0,W,H);
+ g.fillStyle='#e0162b';g.fillRect(48,48,132,52);g.fillStyle='#fff';g.font='800 30px Inter,system-ui';g.fillText('● LIVE',62,85);
+ g.font='900 34px Inter,system-ui';g.fillStyle='#fff';g.fillText('ВОЗ',48,H-48);
+ const w=g.measureText('ВОЗ').width;g.fillStyle='#4b93ff';g.fillText('ДУХ',48+w,H-48);
+ g.fillStyle='rgba(255,255,255,.55)';g.font='600 22px Inter,system-ui';g.fillText('vozduhnews.ru',48+w+g.measureText('ДУХ').width+24,H-48);
+ g.fillStyle='#fff';g.font='900 56px Inter,system-ui';
+ const words=String(title).split(' ');let line='',y=H-150;const lines=[];
+ words.forEach(wd=>{const t=line?line+' '+wd:wd;if(g.measureText(t).width>W-96){lines.push(line);line=wd}else line=t});
+ lines.push(line);lines.slice(-3).forEach((l,i,a)=>g.fillText(l,48,y-(a.length-1-i)*66));
+ cb(c.toDataURL('image/jpeg',.9))};im.onerror=()=>cb(src);im.src=src}
+
 const card=(x,big)=>`<a class="${big?'hero':'card'} reveal" href="article.html?n=${x.slug}">
 ${x.img?`<div class="pic"><img src="${x.img}" alt="" loading="lazy"></div>`:''}
 <span class="tag${x.flag?' red':''}" style="margin-top:12px">${esc(x.flag||x.tag)}</span>

@@ -3,3 +3,7 @@ main = "worker.js"
 compatibility_date = "2026-01-01"
 [ai]
 binding = "AI"
+
+[[kv_namespaces]]
+binding = "DB"
+id = "02092e1185784db7a951a0df4088010f"
