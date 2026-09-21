@@ -57,7 +57,7 @@ export default {
     const pro = env.OR_KEY && b.model !== 'free';
     const r = await fetch(pro?'https://openrouter.ai/api/v1/chat/completions':'https://api.groq.com/openai/v1/chat/completions',{
      method:'POST', headers:{'content-type':'application/json',authorization:`Bearer ${pro?env.OR_KEY:env.GROQ_KEY}`},
-     body:JSON.stringify({model:pro?'anthropic/claude-sonnet-5':'openai/gpt-oss-120b',temperature:1,response_format:{type:'json_object'},
+     body:JSON.stringify({model:pro?'openai/gpt-5-mini':'openai/gpt-oss-120b',temperature:1,response_format:{type:'json_object'},
       messages:[{role:'system',content:STYLE},{role:'user',content:'Тема новости: '+topic}]})});
     const d = await r.json();
     if (!r.ok) return json({error:d.error?.message||'Groq не ответил'},502);
@@ -66,22 +66,28 @@ export default {
    }
 
    if (path === '/image') {
-    const prompt = String(b.prompt||'').slice(0,500);
+    const prompt = String(b.prompt||'').slice(0,800);
     if (!prompt) return json({error:'пустое описание'},400);
-    const r = await env.AI.run('@cf/black-forest-labs/flux-1-schnell',
-      {prompt:PHOTO+prompt, steps:4});
-    return json({image:'data:image/jpeg;base64,'+r.image});
+    if (b.model === 'free' || !env.OR_KEY) {
+     const r = await env.AI.run('@cf/black-forest-labs/flux-1-schnell',{prompt:PHOTO+prompt, steps:4});
+     return json({image:'data:image/jpeg;base64,'+r.image});
+    }
+    return json({image: await gemini(env, [{type:'text',text:PHOTO+prompt+'. Wide 16:9 frame.'}])});
    }
 
-   if (path === '/edit') {           // фото пользователя + промпт → переделка
-    const {image='', prompt='', strength=0.55} = b;
+   if (path === '/edit') {           // фото пользователя + правка, детали сохраняются
+    const {image='', prompt='', strength=0.4} = b;
     if (!image.startsWith('data:')) return json({error:'нужна картинка'},400);
-    const bin = [...atob(image.split(',')[1])].map(c=>c.charCodeAt(0));
-    const r = await env.AI.run('@cf/runwayml/stable-diffusion-v1-5-img2img',
-      {prompt: prompt||'candid amateur photo, natural light', image: bin, strength: Number(strength), num_steps: 20});
-    const buf = await new Response(r).arrayBuffer();
-    let s2=''; new Uint8Array(buf).forEach(c=>s2+=String.fromCharCode(c));
-    return json({image:'data:image/png;base64,'+btoa(s2)});
+    if (!env.OR_KEY) return json({error:'нет ключа OpenRouter'},400);
+    const keep = Number(strength) < 0.5
+      ? 'Make only a subtle change, keep almost everything as is.'
+      : Number(strength) > 0.75 ? 'You may restage the scene, but the same person must stay recognisable.'
+      : 'Change what is asked, keep the rest of the frame intact.';
+    const task = `Edit this photograph. ${keep}
+Keep the same person: face, hair, body and clothing details must stay recognisable. Keep the same room, lighting direction and camera angle unless the instruction says otherwise.
+Preserve fine detail and texture — no smoothing, no beautifying, no plastic skin, no added text or watermarks. It must still look like an ordinary photo taken on a phone.
+Instruction: ${prompt||'make it look like a candid news photo'}`;
+    return json({image: await gemini(env, [{type:'text',text:task},{type:'image_url',image_url:{url:image}}])});
    }
 
    if (path === '/save') {
@@ -129,5 +135,14 @@ export default {
   } catch(e) { return json({error:String(e)},500) }
  }
 };
+async function gemini(env, content){
+ const r = await fetch('https://openrouter.ai/api/v1/chat/completions',{
+  method:'POST', headers:{'content-type':'application/json',authorization:`Bearer ${env.OR_KEY}`},
+  body:JSON.stringify({model:'google/gemini-3.1-flash-image',modalities:['image','text'],messages:[{role:'user',content}]})});
+ const d = await r.json();
+ const im = d.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+ if (!im) throw new Error(d.error?.message || 'модель не вернула картинку');
+ return im;
+}
 const API_SELF = req => new URL(req.url).origin;
 const esc = s => String(s).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
