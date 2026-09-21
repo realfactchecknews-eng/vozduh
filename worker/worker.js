@@ -114,7 +114,7 @@ Instruction: ${prompt||'make it look like a candid news photo'}`;
 
    if (path === '/post') {
     const {title='',lead='',url='',image=''} = b;
-    const caption = `<b>${esc(title)}</b>\n\n${esc(lead)}\n\n${esc(url)}`;
+    const caption = `<b>${esc(title)}</b>\n\n${esc(lead)}\n\n<a href="${esc(url)}"><b>ЧИТАТЬ</b></a>`;
     const api = `https://api.telegram.org/bot${env.TG_TOKEN}/`;
     let res;
     if (image.startsWith('data:')) {

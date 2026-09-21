@@ -93,3 +93,4 @@ footer a{color:#8d96aa}footer a:hover{color:#fff}footer .wrap{padding-top:32px;p
 .pub img{width:90px;height:56px;object-fit:cover;border-radius:6px;background:var(--soft)}
 .pub b{font:700 14px Inter}.pub a{font:13px Inter;color:var(--b2)}
 input[type=range]{padding:0}
+img.av{width:38px;height:38px;border-radius:50%;object-fit:cover;flex:none}

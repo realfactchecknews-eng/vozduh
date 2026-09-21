@@ -24,7 +24,9 @@ addEventListener('scroll',()=>{const h=document.documentElement;$('#progress').s
 const toast=t=>{const e=$('.toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),1800)};
 
 // новости из хранилища Worker + статичные
-const ready = fetch(API+'/list').then(r=>r.json()).then(l=>{if(Array.isArray(l))NEWS.unshift(...l)}).catch(()=>{});
+const tick=()=>{const t=document.querySelector('.ticker div');
+ if(t)t.innerHTML=[...NEWS,...NEWS].slice(0,16).map(n=>`<span>${esc(n.title)}</span>`).join('')};
+const ready = fetch(API+'/list').then(r=>r.json()).then(l=>{if(Array.isArray(l))NEWS.unshift(...l);tick()}).catch(()=>{});
 
 // обложка в едином стиле: фото + затемнение, плашка ВОЗДУХ, LIVE и заголовок
 function cover(src,title,cb){const im=new Image();im.crossOrigin='anonymous';im.onload=()=>{
