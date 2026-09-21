@@ -1,5 +1,5 @@
 // Лента «Воздуха». Новая новость = новый объект в начало массива.
-const SITE='https://realfactchecknews-eng.github.io/vozduh/';
+const SITE=location.origin+location.pathname.replace(/[^/]*$/,'');  // сам подстроится под домен
 const TG='vozduhnews24';   // имя телеграм-канала
 const API='https://vozduh.realfactchecknews.workers.dev'; // Cloudflare Worker: текст, картинки, публикация
 const NEWS=[{
