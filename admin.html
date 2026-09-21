@@ -1,0 +1,118 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Редакция — Воздух</title><meta name="robots" content="noindex"><link rel="stylesheet" href="style.css?v=14"></head><body>
+<main class="wrap" id="root" style="max-width:1280px">
+<div id="gate" style="max-width:340px;margin:60px auto"><h1 style="font:900 28px Inter">Вход в редакцию</h1>
+<form id="lg" class="cform"><input type="password" id="pw" placeholder="Пароль" autofocus><button>Войти</button></form></div>
+
+<div id="panel" hidden>
+<div class="bar2"><h1 style="font:900 32px Inter;margin:0">Редакция</h1>
+<div class="share" style="margin-left:auto"><button type="button" id="exit">Выйти</button></div></div>
+
+<div class="grid" style="grid-template-columns:1.1fr 1fr">
+<form id="f" class="mk">
+ <div class="ai"><b>🤖 Написать новость</b>
+  <label style="margin-top:8px">О чём новость<input id="topic" placeholder="Костя купил абонемент и ни разу не пришёл"></label>
+  <label style="font:600 12px Inter"><input type="checkbox" id="free" style="width:auto;margin-right:6px">дешёвая модель (хуже, но бесплатно)</label>
+  <button type="button" id="gen" style="margin-top:10px">Сгенерировать текст</button></div>
+
+ <label>Заголовок<input name="title" required></label>
+ <label>Подзаголовок<textarea name="lead" rows="2"></textarea></label>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+  <label>Раздел<select name="tag"><option>Стримы</option><option>Скандалы</option><option selected>Общество</option><option>Расследования</option></select></label>
+  <label>Плашка<input name="flag" value="Эксклюзив"></label></div>
+ <label>Текст (абзацы с новой строки)<textarea name="body" rows="8"></textarea></label>
+ <label>Цитата<input name="quote"></label>
+ <label>Подпись к фото<input name="cap" value="Фото: соцсети"></label>
+ <label>Просмотры<input name="views" value="1,2 млн"></label>
+
+ <div class="ai"><b>🖼 Обложка</b>
+  <div class="share" style="margin:10px 0 0;flex-wrap:wrap">
+   <button type="button" id="up">Загрузить фото</button>
+   <button type="button" id="genimg">Нарисовать</button>
+   <button type="button" id="redo">Переделать по промпту</button></div>
+  <input type="file" id="file" accept="image/*" hidden>
+  <label style="margin-top:10px">Промпт для картинки<input id="iprompt" placeholder="парень в зале смотрит в телефон, вечер"></label>
+  <label style="font:600 12px Inter">Насколько сильно менять фото: <span id="sv">55%</span>
+   <input type="range" id="strength" min="20" max="90" value="55"></label>
+  <label style="font:600 12px Inter"><input type="checkbox" id="mark" checked style="width:auto;margin-right:6px">плашка «Воздух» на обложке</label>
+ </div>
+
+ <div class="ai" style="background:#eefaf1;border-color:#c7ecd4"><b>Публикация</b>
+  <label style="font:600 12px Inter;margin-top:8px"><input type="checkbox" id="toSite" checked style="width:auto;margin-right:6px">на сайт</label>
+  <label style="font:600 12px Inter"><input type="checkbox" id="toTg" checked style="width:auto;margin-right:6px">в канал @vozduhnews24</label>
+  <button type="button" id="pub" style="margin-top:10px;background:#0f8a43">Опубликовать</button></div>
+</form>
+
+<div>
+ <div class="sect">Как увидят на сайте</div>
+ <div id="pv" class="pv"></div>
+ <div class="sect" style="margin-top:24px">Как увидят в Telegram</div>
+ <div class="tgpv"><img id="tgimg" alt=""><div class="tgtxt"><b id="tgt"></b><p id="tgl"></p><span id="tgu"></span></div></div>
+ <div class="sect" style="margin-top:24px">Опубликованные</div>
+ <div id="list" class="pubs"></div>
+</div></div></div></main>
+
+<script src="news.js?v=14"></script><script src="app.js?v=14"></script><script>
+const K=()=>localStorage.getItem('vk');
+const call=async(p,d)=>{const r=await fetch(API+p,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...d,key:K()})});
+ const j=await r.json();if(!r.ok)throw Error(j.error||'ошибка');return j};
+const busy=(b,on,t)=>{b.disabled=on;b.textContent=on?'Секунду…':t};
+let COVER='';                                  // готовая обложка (dataURL)
+let RAW='';                                    // исходное фото до обработки
+
+lg.onsubmit=async e=>{e.preventDefault();localStorage.setItem('vk',pw.value);
+ try{await call('/list',{});}catch{} 
+ try{await call('/text',{topic:'проверка доступа',probe:1})}catch(err){if(/пароль/.test(err.message)){toast('Неверный пароль');return}}
+ show()};
+const show=()=>{gate.hidden=1;panel.hidden=0;draw();loadList()};
+exit.onclick=()=>{localStorage.removeItem('vk');location.reload()};
+if(K())show();
+
+// ---- текст
+gen.onclick=async()=>{if(!topic.value.trim())return toast('Напиши тему');busy(gen,1);
+ try{const d=await call('/text',{topic:topic.value,model:free.checked?'free':'pro'});
+  f.title.value=d.title;f.lead.value=d.lead;f.body.value=d.body.join('\n');f.quote.value=d.quote||'';
+  f.views.value=d.views||'1,2 млн';f.flag.value=d.flag||'Эксклюзив';if(d.tag)f.tag.value=d.tag;
+  window.AIC=d.comments||[];if(!iprompt.value)iprompt.value=d.title;draw();toast('Готово')}
+ catch(e){toast(e.message)}finally{busy(gen,0,'Сгенерировать текст')}};
+
+// ---- обложка
+up.onclick=()=>file.click();
+file.onchange=()=>{const r=new FileReader();r.onload=()=>{RAW=r.result;stamp(RAW)};r.readAsDataURL(file.files[0])};
+genimg.onclick=async()=>{busy(genimg,1);try{const d=await call('/image',{prompt:iprompt.value||f.title.value});RAW=d.image;await stamp(RAW)}
+ catch(e){toast(e.message)}finally{busy(genimg,0,'Нарисовать')}};
+redo.onclick=async()=>{if(!RAW)return toast('Сначала загрузи фото');busy(redo,1);
+ try{const d=await call('/edit',{image:RAW,prompt:iprompt.value,strength:strength.value/100});await stamp(d.image)}
+ catch(e){toast(e.message)}finally{busy(redo,0,'Переделать по промпту')}};
+strength.oninput=()=>sv.textContent=strength.value+'%';
+mark.onchange=()=>RAW&&stamp(RAW);
+const stamp=src=>new Promise(r=>{if(!mark.checked){COVER=src;draw();return r()}
+ cover(src,f.title.value,d=>{COVER=d;draw();r()})});
+
+// ---- предпросмотр
+const F=()=>{const d=Object.fromEntries(new FormData(f));d.comments=window.AIC||[];
+ d.body=(d.body||'').split('\n').filter(Boolean);if(d.quote)d.body.splice(1,0,'QUOTE');
+ d.reacts=[['🤮',2500],['👎',2500],['🤬',2400],['💩',2400],['🖕',3],['❤️',2]].map(([e,n])=>[e,Math.max(1,Math.round(n*(.5+Math.random())))]);
+ d.img=COVER;return d};
+function draw(){const x=F();
+ pv.innerHTML=`<span class="tag red">${esc(x.flag)}</span><h2 style="font:900 24px Inter">${esc(x.title)}</h2>
+ <p style="color:#333">${esc(x.lead)}</p>${COVER?`<img src="${COVER}" style="width:100%;border-radius:8px">`:''}
+ ${x.body.map(p=>p==='QUOTE'?`<blockquote style="font-size:16px">${esc(x.quote)}</blockquote>`:`<p style="font-size:15px">${esc(p)}</p>`).join('')}`;
+ tgimg.src=COVER||'';tgimg.style.display=COVER?'block':'none';
+ tgt.textContent=x.title;tgl.textContent=x.lead;tgu.textContent=SITE+'article.html?n=…';}
+f.oninput=draw;
+
+// ---- публикация
+pub.onclick=async()=>{const x=F();if(!x.title)return toast('Нужен заголовок');busy(pub,1);
+ try{let url=SITE;
+  if(toSite.checked){const s=await call('/save',{news:x,site:SITE});url=s.url}
+  if(toTg.checked)await call('/post',{title:x.title,lead:x.lead,url,image:COVER});
+  toast('Опубликовано');loadList()}
+ catch(e){toast(e.message)}finally{busy(pub,0,'Опубликовать')}};
+
+async function loadList(){const r=await fetch(API+'/list').then(r=>r.json());
+ list.innerHTML=r.map(n=>`<div class="pub"><img src="${n.img||''}"><div><b>${esc(n.title)}</b><br>
+  <a href="article.html?n=${n.slug}" target="_blank">открыть</a> · <a href="#" data-del="${n.slug}">удалить</a></div></div>`).join('')||'<p style="color:var(--m)">Пока пусто</p>';
+ list.querySelectorAll('[data-del]').forEach(a=>a.onclick=async e=>{e.preventDefault();
+  if(confirm('Удалить новость с сайта?')){await call('/delete',{slug:a.dataset.del});loadList();toast('Удалено')}});}
+</script></body></html>

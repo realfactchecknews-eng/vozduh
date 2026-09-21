@@ -3,8 +3,9 @@
 const CORS={'access-control-allow-origin':'*','access-control-allow-headers':'content-type','access-control-allow-methods':'POST,OPTIONS'};
 const json=(o,s=200)=>new Response(JSON.stringify(o),{status:s,headers:{'content-type':'application/json',...CORS}});
 
-const PHOTO='editorial news photograph, photojournalism, natural daylight, shallow depth of field, muted cool blue tones, slight film grain, candid unposed moment, 16:9 wide shot, no text, no logos, no captions. Scene: ';
-const STYLE=`Ты редактор сатирического издания «Воздух». Пишешь абсурдные новости-пранки про друзей автора — по-доброму, без оскорблений, мата, политики и намёков на преступления. Стиль серьёзного новостного агентства: сухой тон, ссылки на «источники» и «экспертов», нелепая суть. Русский язык.
+const PHOTO='amateur photo taken on an old smartphone, slightly blurry, harsh direct flash, uneven white balance, mundane everyday russian setting, cluttered background, imperfect framing, visible noise and compression artifacts, unflattering angle, looks like a real photo someone sent in a chat, absolutely no text or watermarks. Scene: ';
+const STYLE=`Ты редактор сатирического издания «Воздух».
+Пиши так, чтобы текст было не отличить от настоящей новости РИА или РБК: сухой протокольный язык, конкретные числа, проценты, даты, должности, названия ведомств и «институтов», ссылки на «источник, близкий к ситуации». Абсурд прячется в сути, а не в стиле: ни одного шутливого слова, ни одного восклицательного знака, никакой иронии в интонации. Читатель должен понять, что это шутка, только вникнув в смысл. Пишешь абсурдные новости-пранки про друзей автора — по-доброму, без оскорблений, мата, политики и намёков на преступления. Стиль серьёзного новостного агентства: сухой тон, ссылки на «источники» и «экспертов», нелепая суть. Русский язык.
 Верни ТОЛЬКО JSON без markdown:
 {"title":"заголовок до 90 знаков","lead":"подзаголовок одним предложением","body":["абзац","абзац","абзац"],"quote":"цитата эксперта или очевидца в кавычках-ёлочках","tag":"Стримы|Скандалы|Общество|Расследования","flag":"короткая плашка, например Эксклюзив","views":"например 1,2 млн","comments":[["имя","комментарий"],["имя","комментарий"],["имя","комментарий"]]}`;
 
@@ -22,6 +23,28 @@ export default {
    const raw = await env.DB.get('news');
    return new Response(raw||'[]',{headers:{'content-type':'application/json','cache-control':'no-store',...CORS}});
   }
+  // предложка: Telegram шлёт сюда всё, что пишут боту
+  if (path === '/tg' && req.method === 'POST') {
+   const u = await req.json();
+   const m = u.message || u.channel_post;
+   const api = `https://api.telegram.org/bot${env.TG_TOKEN}/`;
+   const send = (chat_id,text,extra={}) => fetch(api+'sendMessage',{method:'POST',headers:{'content-type':'application/json'},
+     body:JSON.stringify({chat_id,text,parse_mode:'HTML',...extra})});
+   if (m && m.chat && m.chat.type === 'private') {
+    const from = m.from||{}, who = (from.username?'@'+from.username:'')+' '+(from.first_name||'');
+    if (m.text === '/start') {
+     await send(m.chat.id, 'Это бот «Воздуха» — сатирического издания, где все новости выдуманы.\n\nПришли сюда идею новости, фото или сплетню про друга — редакция посмотрит и, может быть, выпустит.\n\nКанал: @vozduhnews24\nСайт: https://vozduhnews.ru'+(env.ADMIN_ID?'':'\n\nТвой id: '+m.chat.id));
+    } else {
+     if (env.ADMIN_ID) {
+      await fetch(api+'forwardMessage',{method:'POST',headers:{'content-type':'application/json'},
+        body:JSON.stringify({chat_id:env.ADMIN_ID, from_chat_id:m.chat.id, message_id:m.message_id})});
+      await send(env.ADMIN_ID, '📨 Предложка от '+esc(who)+' (id '+m.chat.id+')');
+     }
+     await send(m.chat.id, 'Принято. Редакция «Воздуха» изучает материал.');
+    }
+   }
+   return json({ok:true});
+  }
   if (req.method !== 'POST') return json({error:'только POST'},405);
 
   let b; try { b = await req.json() } catch { return json({error:'битый JSON'},400) }
@@ -31,13 +54,15 @@ export default {
    if (path === '/text') {
     const topic = String(b.topic||'').slice(0,300);
     if (!topic) return json({error:'пустая тема'},400);
-    const r = await fetch('https://api.groq.com/openai/v1/chat/completions',{
-     method:'POST', headers:{'content-type':'application/json',authorization:`Bearer ${env.GROQ_KEY}`},
-     body:JSON.stringify({model:'openai/gpt-oss-120b',temperature:1,response_format:{type:'json_object'},
+    const pro = env.OR_KEY && b.model !== 'free';
+    const r = await fetch(pro?'https://openrouter.ai/api/v1/chat/completions':'https://api.groq.com/openai/v1/chat/completions',{
+     method:'POST', headers:{'content-type':'application/json',authorization:`Bearer ${pro?env.OR_KEY:env.GROQ_KEY}`},
+     body:JSON.stringify({model:pro?'anthropic/claude-sonnet-5':'openai/gpt-oss-120b',temperature:1,response_format:{type:'json_object'},
       messages:[{role:'system',content:STYLE},{role:'user',content:'Тема новости: '+topic}]})});
     const d = await r.json();
     if (!r.ok) return json({error:d.error?.message||'Groq не ответил'},502);
-    return json(JSON.parse(d.choices[0].message.content));
+    const raw = d.choices[0].message.content.replace(/^\s*```(?:json)?|```\s*$/g,'').trim();
+    return json(JSON.parse(raw));
    }
 
    if (path === '/image') {
@@ -46,6 +71,17 @@ export default {
     const r = await env.AI.run('@cf/black-forest-labs/flux-1-schnell',
       {prompt:PHOTO+prompt, steps:4});
     return json({image:'data:image/jpeg;base64,'+r.image});
+   }
+
+   if (path === '/edit') {           // фото пользователя + промпт → переделка
+    const {image='', prompt='', strength=0.55} = b;
+    if (!image.startsWith('data:')) return json({error:'нужна картинка'},400);
+    const bin = [...atob(image.split(',')[1])].map(c=>c.charCodeAt(0));
+    const r = await env.AI.run('@cf/runwayml/stable-diffusion-v1-5-img2img',
+      {prompt: prompt||'candid amateur photo, natural light', image: bin, strength: Number(strength), num_steps: 20});
+    const buf = await new Response(r).arrayBuffer();
+    let s2=''; new Uint8Array(buf).forEach(c=>s2+=String.fromCharCode(c));
+    return json({image:'data:image/png;base64,'+btoa(s2)});
    }
 
    if (path === '/save') {

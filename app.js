@@ -9,7 +9,7 @@ document.body.insertAdjacentHTML('afterbegin',`<div id="progress"></div>
 <span>USD <b>82,4</b> <span class="up">▲</span> · EUR <b>95,1</b> <span class="dn">▼</span> · Москва <b>+14°</b></span>
 <span>👁 <b id="v">184 312</b> читают сейчас</span></div>
 <header><div class="bar"><a class="logo" href="./"><i></i>ВОЗ<span>ДУХ</span></a>
-<nav><a href="./">Главное</a><a href="section.html?t=Стримы">Стримы</a><a href="section.html?t=Скандалы">Скандалы</a><a href="section.html?t=Общество">Общество</a><a href="efir.html">Эфир</a><a href="make.html">Создать новость</a></nav>
+<nav><a href="./">Главное</a><a href="section.html?t=Стримы">Стримы</a><a href="section.html?t=Скандалы">Скандалы</a><a href="section.html?t=Общество">Общество</a><a href="efir.html">Эфир</a></nav>
 <a class="tgbtn" href="${tgLink}" target="_blank">Подписаться${TG?'':' (скоро)'}</a></div>
 <div class="ticker"><b>Срочно</b><div>${[...NEWS,...NEWS].map(n=>`<span>${esc(n.title)}</span>`).join('')}</div></div></header>`);
 document.body.insertAdjacentHTML('beforeend',`<footer><div class="wrap">
