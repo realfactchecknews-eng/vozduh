@@ -1,9 +1,9 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Эфир — Воздух</title><link rel="stylesheet" href="style.css?v=8"></head><body>
+<title>Эфир — Воздух</title><link rel="stylesheet" href="style.css?v=9"></head><body>
 <main class="wrap"><h1 style="font:900 40px Inter,system-ui">Эфир <span class="dot"></span></h1>
 <p style="color:var(--m)">Онлайн-трансляция событий. Обновляется по мере поступления.</p>
 <div class="live" id="l"></div></main>
-<script src="news.js?v=8"></script><script src="app.js?v=8"></script><script>
+<script src="news.js?v=9"></script><script src="app.js?v=9"></script><script>
 l.innerHTML=NEWS.filter(n=>n.live).flatMap(n=>n.live.slice().reverse().map(([t,s])=>
 `<div class="ev reveal"><time>${t}</time><div><p>${esc(s)}</p><a href="article.html?n=${n.slug}">${esc(n.title)}</a></div></div>`)).join('');
 watch();</script></body></html>
