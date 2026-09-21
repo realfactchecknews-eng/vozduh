@@ -33,14 +33,15 @@ function cover(src,title,cb){const im=new Image();im.crossOrigin='anonymous';im.
  const gr=g.createLinearGradient(0,H*.35,0,H);gr.addColorStop(0,'rgba(10,19,32,0)');gr.addColorStop(1,'rgba(10,19,32,.92)');
  g.fillStyle=gr;g.fillRect(0,0,W,H);
  g.fillStyle='#e0162b';g.fillRect(48,48,132,52);g.fillStyle='#fff';g.font='800 30px Inter,system-ui';g.fillText('● LIVE',62,85);
- g.font='900 34px Inter,system-ui';g.fillStyle='#fff';g.fillText('ВОЗ',48,H-48);
- const w=g.measureText('ВОЗ').width;g.fillStyle='#4b93ff';g.fillText('ДУХ',48+w,H-48);
- g.fillStyle='rgba(255,255,255,.55)';g.font='600 22px Inter,system-ui';g.fillText('vozduhnews.ru',48+w+g.measureText('ДУХ').width+24,H-48);
+ const LG='900 38px Inter,Arial Black,system-ui';g.font=LG;
+ const w1=g.measureText('ВОЗ').width,w2=g.measureText('ДУХ').width;
+ g.fillStyle='#fff';g.fillText('ВОЗ',48,H-46);g.fillStyle='#4b93ff';g.fillText('ДУХ',48+w1,H-46);
+ g.fillStyle='rgba(255,255,255,.6)';g.font='600 22px Inter,system-ui';g.fillText('vozduhnews.ru',48+w1+w2+22,H-46);
  g.fillStyle='#fff';g.font='900 56px Inter,system-ui';
  const words=String(title).split(' ');let line='',y=H-150;const lines=[];
  words.forEach(wd=>{const t=line?line+' '+wd:wd;if(g.measureText(t).width>W-96){lines.push(line);line=wd}else line=t});
  lines.push(line);lines.slice(-3).forEach((l,i,a)=>g.fillText(l,48,y-(a.length-1-i)*66));
- cb(c.toDataURL('image/jpeg',.9))};im.onerror=()=>cb(src);im.src=src}
+ cb(c.toDataURL('image/jpeg',.88))};im.onerror=()=>cb(src);im.src=src}
 
 const card=(x,big)=>`<a class="${big?'hero':'card'} reveal" href="article.html?n=${x.slug}">
 ${x.img?`<div class="pic"><img src="${x.img}" alt="" loading="lazy"></div>`:''}
