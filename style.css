@@ -74,14 +74,14 @@ footer a{color:#8d96aa}footer a:hover{color:#fff}footer .wrap{padding-top:32px;p
 .cform button,.mk button{justify-self:start;background:var(--b);color:#fff;border:0;border-radius:22px;padding:10px 20px;font:700 14px Inter;cursor:pointer}
 .cform button:hover,.mk button:hover{background:var(--b2)}
 .mk{display:grid;gap:14px;font:600 13px Inter,system-ui}.mk label{display:grid;gap:6px}
-.pv{border:1px solid var(--line);border-radius:12px;padding:18px;position:sticky;top:120px;max-height:80vh;overflow:auto}
+.pv{border:1px solid var(--line);border-radius:12px;padding:18px;background:#fff;max-height:70vh;overflow:auto;overscroll-behavior:contain}
 .dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--red);animation:pulse 1.6s infinite;vertical-align:middle}
 .live{border-left:2px solid var(--line);margin-top:24px}
 .ev{display:grid;grid-template-columns:70px 1fr;gap:16px;padding:0 0 28px 20px;position:relative}
 .ev::before{content:"";position:absolute;left:-7px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--b2);border:3px solid #fff}
 .ev time{font:800 14px Inter;color:var(--b2)}.ev p{margin:0 0 4px}.ev a{font:600 14px Inter;color:var(--m)}
 .ev a:hover{color:var(--b2)}
-@media(max-width:860px){.pv{position:static}.tgbtn{margin-left:0}}
+@media(max-width:860px){.tgbtn{margin-left:0}}
 .ai{background:linear-gradient(135deg,#eef4ff,#f7f2ff);border:1px solid #d8e2f8;border-radius:12px;padding:16px}
 .ai b{font:800 15px Inter,system-ui}.ai button{background:var(--b2)}
 .mk button:disabled{opacity:.6;cursor:wait}
