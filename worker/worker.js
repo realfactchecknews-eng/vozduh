@@ -138,7 +138,7 @@ Instruction: ${prompt||'make it look like a candid news photo'}`;
 async function gemini(env, content){
  const r = await fetch('https://openrouter.ai/api/v1/chat/completions',{
   method:'POST', headers:{'content-type':'application/json',authorization:`Bearer ${env.OR_KEY}`},
-  body:JSON.stringify({model:'google/gemini-3.1-flash-image',modalities:['image','text'],messages:[{role:'user',content}]})});
+  body:JSON.stringify({model:'google/gemini-2.5-flash-image',modalities:['image','text'],messages:[{role:'user',content}]})});
  const d = await r.json();
  const im = d.choices?.[0]?.message?.images?.[0]?.image_url?.url;
  if (!im) throw new Error(d.error?.message || 'модель не вернула картинку');

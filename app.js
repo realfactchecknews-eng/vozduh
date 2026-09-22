@@ -28,6 +28,14 @@ const tick=()=>{const t=document.querySelector('.ticker div');
  if(t)t.innerHTML=[...NEWS,...NEWS].slice(0,16).map(n=>`<span>${esc(n.title)}</span>`).join('')};
 const ready = fetch(API+'/list').then(r=>r.json()).then(l=>{if(Array.isArray(l))NEWS.unshift(...l);tick()}).catch(()=>{});
 
+// ужать фото до 1024 точек перед отправкой в модель — дешевле и быстрее
+function shrink(src,max=1024){return new Promise(r=>{const im=new Image();im.crossOrigin='anonymous';
+ im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height));
+  if(k===1&&src.length<900000)return r(src);
+  const c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+  c.getContext('2d').drawImage(im,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',.85))};
+ im.onerror=()=>r(src);im.src=src})}
+
 // обложка в едином стиле: фото + затемнение, плашка ВОЗДУХ, LIVE и заголовок
 function cover(src,title,cb){const im=new Image();im.crossOrigin='anonymous';im.onload=()=>{
  const W=1600,H=900,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
