@@ -13,8 +13,9 @@ document.body.insertAdjacentHTML('afterbegin',`<div id="progress"></div>
 <a class="tgbtn" href="${tgLink}" target="_blank">Подписаться${TG?'':' (скоро)'}</a></div>
 <div class="ticker"><b>Срочно</b><div>${[...NEWS,...NEWS].map(n=>`<span>${esc(n.title)}</span>`).join('')}</div></div></header>`);
 document.body.insertAdjacentHTML('beforeend',`<footer><div class="wrap">
-<div><a class="logo" href="./">ВОЗ<span>ДУХ</span></a><p style="max-width:380px">Сатирическое издание. Все новости выдуманы, совпадения случайны.</p></div>
-<div><b style="color:#fff">Разделы</b><br><a href="section.html?t=Стримы">Стримы</a> · <a href="section.html?t=Общество">Общество</a> · <a href="efir.html">Эфир</a><br><br>
+<div><a class="logo" href="./">ВОЗ<span>ДУХ</span></a><p style="max-width:380px">Сатирическое издание. Все новости, цитаты, эксперты, цифры и фотографии выдуманы. <a href="terms.html">Подробнее</a></p></div>
+<div><b style="color:#fff">Разделы</b><br><a href="section.html?t=Стримы">Стримы</a> · <a href="section.html?t=Общество">Общество</a> · <a href="efir.html">Эфир</a><br>
+<a href="terms.html">Пользовательское соглашение</a><br><br>
 <a class="tgbtn" href="${tgLink}" target="_blank">Мы в Telegram</a></div></div></footer><div class="toast"></div>`);
 
 let n=184312;setInterval(()=>$('#v').textContent=(n+=Math.floor(Math.random()*40-12)).toLocaleString('ru'),1500);
