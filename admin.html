@@ -1,5 +1,5 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Редакция — Воздух</title><meta name="robots" content="noindex"><link rel="icon" href="favicon.svg"><link rel="alternate icon" href="favicon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="stylesheet" href="style.css?v=22"></head><body>
+<title>Редакция — Воздух</title><meta name="robots" content="noindex"><link rel="icon" href="favicon.svg"><link rel="alternate icon" href="favicon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="stylesheet" href="style.css?v=23"></head><body>
 <main class="wrap" id="root" style="max-width:1280px">
 <div id="gate" style="max-width:340px;margin:60px auto"><h1 style="font:900 28px Inter">Вход в редакцию</h1>
 <form id="lg" class="cform"><input type="password" id="pw" placeholder="Пароль" autofocus><button>Войти</button></form></div>
@@ -52,13 +52,14 @@
  <div id="list" class="pubs"></div>
 </div></div></div></main>
 
-<script src="news.js?v=22"></script><script src="app.js?v=22"></script><script>
+<script src="news.js?v=23"></script><script src="app.js?v=23"></script><script>
 const K=()=>localStorage.getItem('vk');
 const call=async(p,d)=>{const r=await fetch(API+p,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...d,key:K()})});
  const j=await r.json();if(!r.ok)throw Error(j.error||'ошибка');return j};
 const busy=(b,on,t)=>{b.disabled=on;b.textContent=on?'Секунду…':t};
 let COVER='';                                  // готовая обложка (dataURL)
-let RAW='';                                    // исходное фото до обработки
+let RAW='';
+let SHORT='';                                  // короткая ссылка с превью                                    // исходное фото до обработки
 
 lg.onsubmit=async e=>{e.preventDefault();localStorage.setItem('vk',pw.value);
  try{await call('/list',{});}catch{} 
@@ -72,7 +73,7 @@ gen.onclick=async()=>{if(!topic.value.trim())return toast('Напиши тему
  try{const d=await call('/text',{topic:topic.value,model:free.checked?'free':'pro'});
   f.title.value=d.title;f.lead.value=d.lead;f.body.value=d.body.join('\n');f.quote.value=d.quote||'';
   f.views.value=d.views||'1,2 млн';f.flag.value=d.flag||'Эксклюзив';if(d.tag)f.tag.value=d.tag;
-  window.AIC=d.comments||[];if(!iprompt.value)iprompt.value=d.title;draw();toast('Готово')}
+  window.AIC=d.comments||[];window.AIL=d.live||[];if(!iprompt.value)iprompt.value=d.title;draw();toast(`Готово · комментариев ${(d.comments||[]).length}, хроника ${(d.live||[]).length}`)}
  catch(e){toast(e.message)}finally{busy(gen,0,'Сгенерировать текст')}};
 
 // ---- обложка
@@ -90,7 +91,7 @@ const stamp=src=>new Promise(r=>{if(!mark.checked){COVER=src;draw();return r()}
  cover(src,f.title.value,d=>{COVER=d;draw();r()})});
 
 // ---- предпросмотр
-const F=()=>{const d=Object.fromEntries(new FormData(f));d.comments=window.AIC||[];
+const F=()=>{const d=Object.fromEntries(new FormData(f));d.comments=window.AIC||[];d.live=window.AIL||[];
  d.body=(d.body||'').split('\n').filter(Boolean);if(d.quote)d.body.splice(1,0,'QUOTE');
  d.reacts=[['🤮',2500],['👎',2500],['🤬',2400],['💩',2400],['🖕',3],['❤️',2]].map(([e,n])=>[e,Math.max(1,Math.round(n*(.5+Math.random())))]);
  d.img=COVER;return d};
@@ -105,8 +106,8 @@ f.oninput=draw;
 // ---- публикация
 pub.onclick=async()=>{const x=F();if(!x.title)return toast('Нужен заголовок');busy(pub,1);
  try{let url=SITE;
-  if(toSite.checked){const s=await call('/save',{news:x,site:SITE});url=s.url}
-  if(toTg.checked)await call('/post',{title:x.title,lead:x.lead,url,image:COVER});
+  if(toSite.checked){const s=await call('/save',{news:x,site:SITE});url=s.url;SHORT=s.short}
+  if(toTg.checked)await call('/post',{title:x.title,lead:x.lead,url:SHORT||url,image:COVER,tag:x.tag,flag:x.flag,views:x.views});
   toast('Опубликовано');loadList()}
  catch(e){toast(e.message)}finally{busy(pub,0,'Опубликовать')}};
 
