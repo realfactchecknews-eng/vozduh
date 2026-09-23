@@ -9,7 +9,7 @@ const x=hash?JSON.parse(decodeURIComponent(escape(atob(hash)))):(NEWS.find(n=>n.
 document.title=x.title+' — Воздух';
 a.innerHTML=`<span class="tag red">${esc(x.flag||'Новость')}</span> <span class="tag">${esc(x.tag)}</span>
 <h1>${esc(x.title)}</h1><p class="lead">${esc(x.lead)}</p>
-<div class="byline"><img class="av" src="avatar.png" alt="Воздух"><div><b>Редакция «Воздуха»</b><br>${esc(x.time)} · 👁 ${esc(x.views||'')} · ⏱ 2 мин</div>
+<div class="byline"><img class="av" src="avatar.png" alt="Воздух"><div><b>Редакция «Воздуха»</b><br>${esc(when(x))} · 👁 ${esc(x.views||'')} · ⏱ 2 мин</div>
 <div class="share"><a id="tg" target="_blank">Telegram</a><button id="copy">Скопировать ссылку</button></div></div>
 ${x.img?`<figure class="reveal"><div class="pic"><img src="${x.img}" alt=""></div><figcaption>${esc(x.cap||'')}</figcaption></figure>`:''}
 `+x.body.map((p,i)=>p==='QUOTE'?`<blockquote class="reveal">${esc(x.quote)}</blockquote>`:p==='REACTS'?reacts(x.reacts||[]):`<p${i===0?' class="drop"':''}>${p}</p>`).join('')

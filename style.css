@@ -106,3 +106,4 @@ article a{color:var(--b2);text-decoration:underline}
 .cm .like:hover,.cm .like.on{color:var(--b2)}
 .showmore{background:none;border:1px solid var(--line);border-radius:22px;padding:9px 18px;font:600 14px Inter;color:var(--b2);cursor:pointer;margin-top:14px}
 .showmore:hover{background:var(--soft)}
+.ev time small{display:block;font:600 12px Inter;color:var(--m);margin-top:2px}

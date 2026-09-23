@@ -61,6 +61,13 @@ function cover(src,title,cb){const im=new Image();im.crossOrigin='anonymous';im.
  const y0=H-132;show.forEach((l,i)=>g.fillText(l,48,y0-(show.length-1-i)*(size+10)));
  cb(c.toDataURL('image/jpeg',.88))};im.onerror=()=>cb(src);im.src=src}
 
+// «23 сентября, 11:03» — дата вместо голого времени
+const when=x=>{if(!x.date)return x.time||'';
+ const d=new Date(x.date),n=new Date(),same=d.toDateString()===n.toDateString();
+ const hm=d.toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'});
+ const day=d.toLocaleDateString('ru',{day:'numeric',month:'long'});
+ return same?`сегодня, ${hm}`:`${day}, ${hm}`};
+
 // просмотры растут со временем: быстро в первый час, потом медленно
 function views(x){
  if(!x.date) return x.views||'';
@@ -73,7 +80,7 @@ const card=(x,big)=>`<a class="${big?'hero':'card'} reveal" href="article.html?n
 ${x.img?`<div class="pic"><img src="${x.img}" alt="" loading="lazy"></div>`:''}
 <span class="tag${x.flag?' red':''}" style="margin-top:12px">${esc(x.flag||x.tag)}</span>
 <${big?'h2':'h3'}>${esc(x.title)}</${big?'h2':'h3'}><p>${esc(x.lead)}</p>
-<div class="meta"><span>${esc(x.tag)}</span><span>${esc(x.time)}</span><span>👁 ${esc(views(x)||x.views||'')}</span></div></a>`;
+<div class="meta"><span>${esc(x.tag)}</span><span>${esc(when(x))}</span><span>👁 ${esc(views(x)||x.views||'')}</span></div></a>`;
 
 // ---- реакции и комментарии
 function reacts(list){return `<div class="reacts reveal">${list.map(([e,c])=>`<button data-n="${c}">${e} <b>${c>=1000?(c/1000).toFixed(1).replace('.',',')+'K':c}</b></button>`).join('')}</div>`}

@@ -5,9 +5,10 @@
 <div class="live" id="l"></div></main>
 <script src="news.js?v=22"></script><script src="app.js?v=22"></script><script>
 ready.then(()=>{const hhmm=n=>n.date?new Date(n.date).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'}):(n.time||'');
+const dayOf=n=>n.date?new Date(n.date).toLocaleDateString('ru',{day:'numeric',month:'short'}):'';
 // у новостей без хроники показываем хотя бы факт публикации
 let rows=NEWS.map(n=>Array.isArray(n.live)&&n.live.length?n:{...n,live:[[hhmm(n),'Опубликован материал: «'+n.title+'»']]});
 l.innerHTML=rows.flatMap(n=>n.live.slice().reverse().map(([t,s])=>
-`<div class="ev reveal"><time>${t}</time><div><p>${esc(s)}</p><a href="article.html?n=${n.slug}">${esc(n.title)}</a></div></div>`)).join('');
+`<div class="ev reveal"><time>${t}<small>${dayOf(n)}</small></time><div><p>${esc(s)}</p><a href="article.html?n=${n.slug}">${esc(n.title)}</a></div></div>`)).join('');
 if(!rows.length)l.innerHTML='<p style="color:var(--m)">Пока тихо. Как только что-то произойдёт, событие появится здесь.</p>';
 watch()});</script></body></html>
