@@ -55,22 +55,38 @@ function cover(src,title,cb){const im=new Image();im.crossOrigin='anonymous';im.
  lines.push(line);lines.slice(-3).forEach((l,i,a)=>g.fillText(l,48,y-(a.length-1-i)*66));
  cb(c.toDataURL('image/jpeg',.88))};im.onerror=()=>cb(src);im.src=src}
 
+// просмотры растут со временем: быстро в первый час, потом медленно
+function views(x){
+ if(!x.date) return x.views||'';
+ const min=Math.max(1,(Date.now()-new Date(x.date))/60000);
+ const base=(x.slug||'').split('').reduce((a,c)=>a+c.charCodeAt(0),0)%400+600;
+ const n=Math.round(base*Math.pow(min,0.62));
+ return n>=1e6?(n/1e6).toFixed(1).replace('.',',')+' млн':n>=1000?Math.round(n/1000)+' тыс':n;
+}
 const card=(x,big)=>`<a class="${big?'hero':'card'} reveal" href="article.html?n=${x.slug}">
 ${x.img?`<div class="pic"><img src="${x.img}" alt="" loading="lazy"></div>`:''}
 <span class="tag${x.flag?' red':''}" style="margin-top:12px">${esc(x.flag||x.tag)}</span>
 <${big?'h2':'h3'}>${esc(x.title)}</${big?'h2':'h3'}><p>${esc(x.lead)}</p>
-<div class="meta"><span>${esc(x.tag)}</span><span>${esc(x.time)}</span><span>👁 ${esc(x.views||'')}</span></div></a>`;
+<div class="meta"><span>${esc(x.tag)}</span><span>${esc(x.time)}</span><span>👁 ${esc(views(x)||x.views||'')}</span></div></a>`;
 
 // ---- реакции и комментарии
 function reacts(list){return `<div class="reacts reveal">${list.map(([e,c])=>`<button data-n="${c}">${e} <b>${c>=1000?(c/1000).toFixed(1).replace('.',',')+'K':c}</b></button>`).join('')}</div>`}
+const ago=m=>m<60?`${Math.round(m)} мин назад`:m<1440?`${Math.round(m/60)} ч назад`:`${Math.round(m/1440)} дн назад`;
 function comments(slug,seed){
   const mine=JSON.parse(localStorage.getItem('c_'+slug)||'[]');
-  const all=[...seed.map(([a,t])=>({a,t})),...mine];
+  const all=[...seed.map(([a,t],i)=>({a,t,m:(i+1)*17+(i*i)%23})),...mine.map(c=>({...c,m:1}))];
+  const one=c=>`<div class="cm"><div class="av">${esc((c.a||'?')[0])}</div><div><b>${esc(c.a)}</b> <time>${ago(c.m||1)}</time>
+   <p>${esc(c.t)}</p><span class="like" tabindex="0">👍 ${Math.floor(Math.random()*40)}</span></div></div>`;
+  const head=all.slice(0,4), rest=all.slice(4);
   return `<section class="comments reveal"><div class="sect">Комментарии <span style="color:var(--m)">${all.length}</span></div>
-  ${all.map(c=>`<div class="cm"><div class="av">${esc(c.a[0]||'?')}</div><div><b>${esc(c.a)}</b><p>${esc(c.t)}</p></div></div>`).join('')}
+  ${head.map(one).join('')}
+  ${rest.length?`<div class="more-cm" hidden>${rest.map(one).join('')}</div>
+   <button class="showmore" type="button">Показать ещё ${rest.length}</button>`:''}
   <form class="cform"><input name="a" placeholder="Ваше имя" maxlength="30" required><textarea name="t" placeholder="Ваш комментарий" maxlength="400" required rows="3"></textarea><button>Отправить</button></form></section>`;
 }
 function wire(slug){
+  const sm=$('.showmore');sm&&(sm.onclick=()=>{$('.more-cm').hidden=false;sm.remove()});
+  $$('.like').forEach(l=>l.onclick=()=>{const n=+l.textContent.replace(/\D/g,'')+(l.classList.toggle('on')?1:-1);l.textContent='👍 '+n});
   $$('.reacts button').forEach(b=>b.onclick=()=>{const on=b.classList.toggle('me'),c=+b.dataset.n+(on?1:0);b.querySelector('b').textContent=c>=1000?(c/1000).toFixed(1).replace('.',',')+'K':c});
   const f=$('.cform');f&&(f.onsubmit=e=>{e.preventDefault();const d=Object.fromEntries(new FormData(f));if(!d.a.trim()||!d.t.trim())return;
     const k='c_'+slug,m=JSON.parse(localStorage.getItem(k)||'[]');m.push({a:d.a,t:d.t});localStorage.setItem(k,JSON.stringify(m));

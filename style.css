@@ -97,3 +97,8 @@ img.av{width:38px;height:38px;border-radius:50%;object-fit:cover;flex:none}
 article h2{font:800 24px/1.3 Inter,system-ui;margin:34px 0 10px}
 article ul{padding-left:22px}article li{margin-bottom:8px}
 article a{color:var(--b2);text-decoration:underline}
+.cm time{font:12px Inter,system-ui;color:var(--m)}
+.cm .like{font:13px Inter,system-ui;color:var(--m);cursor:pointer;user-select:none;display:inline-block;margin-top:6px}
+.cm .like:hover,.cm .like.on{color:var(--b2)}
+.showmore{background:none;border:1px solid var(--line);border-radius:22px;padding:9px 18px;font:600 14px Inter;color:var(--b2);cursor:pointer;margin-top:14px}
+.showmore:hover{background:var(--soft)}

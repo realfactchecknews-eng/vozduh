@@ -7,12 +7,32 @@ const PHOTO='amateur photo taken on an old smartphone, slightly blurry, harsh di
 const STYLE=`Ты редактор сатирического издания «Воздух».
 Пиши так, чтобы текст было не отличить от настоящей новости РИА или РБК: сухой протокольный язык, конкретные числа, проценты, даты, должности, названия ведомств и «институтов», ссылки на «источник, близкий к ситуации». Абсурд прячется в сути, а не в стиле: ни одного шутливого слова, ни одного восклицательного знака, никакой иронии в интонации. Читатель должен понять, что это шутка, только вникнув в смысл. Пишешь абсурдные новости-пранки про друзей автора — по-доброму, без оскорблений, мата, политики и намёков на преступления. Стиль серьёзного новостного агентства: сухой тон, ссылки на «источники» и «экспертов», нелепая суть. Русский язык.
 Верни ТОЛЬКО JSON без markdown:
-{"title":"заголовок до 90 знаков","lead":"подзаголовок одним предложением","body":["абзац","абзац","абзац"],"quote":"цитата эксперта или очевидца в кавычках-ёлочках","tag":"Стримы|Скандалы|Общество|Расследования","flag":"короткая плашка, например Эксклюзив","views":"например 1,2 млн","comments":[["имя","комментарий"],["имя","комментарий"],["имя","комментарий"]]}`;
+{"title":"заголовок до 90 знаков","lead":"подзаголовок одним предложением","body":["абзац","абзац","абзац"],"quote":"цитата эксперта или очевидца в кавычках-ёлочках","tag":"Стримы|Скандалы|Общество|Расследования","flag":"короткая плашка, например Эксклюзив","views":"например 1,2 млн","comments":[["имя","комментарий"]] — 8-12 штук, разные люди: кто-то возмущён, кто-то шутит, кто-то не понял новость, кто-то пишет не по теме,
+"live":[["07:25","что произошло"]] — 4-6 строк хроники события по времени, от раннего к позднему}`;
 
 export default {
  async fetch(req, env) {
   if (req.method === 'OPTIONS') return new Response(null,{headers:CORS});
   const path = new URL(req.url).pathname;
+  if (path.startsWith('/n/')) {
+   const slug = path.slice(3).replace(/[^a-z0-9]/gi,'');
+   const all = JSON.parse(await env.DB.get('news')||'[]');
+   const n = all.find(x=>x.slug===slug);
+   if (!n) return Response.redirect('https://vozduhnews.ru/',302);
+   const url = 'https://vozduhnews.ru/article.html?n='+slug;
+   const img = n.img && n.img.startsWith('http') ? n.img : new URL(req.url).origin+'/img/'+slug;
+   const html = `<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<title>${esc(n.title)} — Воздух</title>
+<meta property="og:site_name" content="Воздух"><meta property="og:type" content="article">
+<meta property="og:title" content="${esc(n.title)}">
+<meta property="og:description" content="${esc(n.lead||'')}">
+<meta property="og:image" content="${esc(img)}">
+<meta property="og:url" content="${esc(url)}">
+<meta name="twitter:card" content="summary_large_image">
+<meta http-equiv="refresh" content="0;url=${esc(url)}">
+</head><body>Открываем новость… <a href="${esc(url)}">перейти</a></body></html>`;
+   return new Response(html,{headers:{'content-type':'text/html;charset=utf-8','cache-control':'public,max-age=300'}});
+  }
   if (path.startsWith('/img/')) {
    const d = await env.DB.get('img_'+path.slice(5));
    if (!d) return new Response('нет картинки',{status:404,headers:CORS});
@@ -103,7 +123,7 @@ Instruction: ${prompt||'make it look like a candid news photo'}`;
     const all = JSON.parse(await env.DB.get('news')||'[]');
     all.unshift(x);
     await env.DB.put('news', JSON.stringify(all.slice(0,60)));
-    return json({ok:true, slug:x.slug, url:(b.site||'')+'article.html?n='+x.slug});
+    return json({ok:true, slug:x.slug, url:(b.site||'')+'article.html?n='+x.slug, short:API_SELF(req)+'/n/'+x.slug});
    }
 
    if (path === '/delete') {
@@ -114,7 +134,14 @@ Instruction: ${prompt||'make it look like a candid news photo'}`;
 
    if (path === '/post') {
     const {title='',lead='',url='',image=''} = b;
-    const caption = `<b>${esc(title)}</b>\n\n${esc(lead)}\n\n<a href="${esc(url)}"><b>ЧИТАТЬ</b></a>`;
+    const ICON = {'Стримы':'🎥','Скандалы':'🔥','Общество':'🏛','Расследования':'🔎'};
+    const flag = b.flag ? b.flag.toUpperCase() : 'СРОЧНО';
+    const rub = b.tag ? `${ICON[b.tag]||'📰'} ${esc(b.tag)}` : '';
+    const views = b.views ? ` · 👁 ${esc(b.views)}` : '';
+    const caption = `🔴 <b>${esc(flag)}</b>\n\n<b>${esc(title)}</b>\n\n${esc(lead)}\n\n`
+      + `${rub}${views}\n\n`
+      + `📖 <a href="${esc(url)}"><b>ЧИТАТЬ ПОЛНОСТЬЮ</b></a>\n`
+      + `💬 <a href="https://t.me/vozduhnews_bot"><b>ПРЕДЛОЖИТЬ НОВОСТЬ</b></a>`;
     const api = `https://api.telegram.org/bot${env.TG_TOKEN}/`;
     let res;
     if (image.startsWith('data:')) {
