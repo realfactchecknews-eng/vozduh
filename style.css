@@ -88,7 +88,11 @@ footer a{color:#8d96aa}footer a:hover{color:#fff}footer .wrap{padding-top:32px;p
 .bar2{display:flex;align-items:center;gap:16px;margin-bottom:24px}
 .tgpv{background:#17212b;border-radius:12px;overflow:hidden;max-width:420px}
 .tgpv img{width:100%;display:block}.tgtxt{padding:12px 14px;color:#fff;font:15px Inter,system-ui;border-left:3px solid #4b93ff;margin:10px}
-.tgtxt p{color:#c9d3de;margin:6px 0}.tgtxt span{color:#6ab3f3;font-size:14px;word-break:break-all}
+.tgtxt p{color:#c9d3de;margin:8px 0}.tgtxt a{color:#6ab3f3;font-size:15px}
+.tgtxt .h{font:700 12px Inter;color:#8fb8e0;letter-spacing:.5px;margin-bottom:8px}
+.tgtxt .q{border-left:3px solid #4b93ff;padding-left:10px;color:#c9d3de;font-style:italic;margin:10px 0}
+.tgtxt .sep{color:#3d4d5e;font-size:12px;margin:10px 0;overflow:hidden;white-space:nowrap}
+.tgtxt .hash{color:#6ab3f3;font-size:14px}
 .pubs{display:grid;gap:10px}.pub{display:grid;grid-template-columns:90px 1fr;gap:12px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px}
 .pub img{width:90px;height:56px;object-fit:cover;border-radius:6px;background:var(--soft)}
 .pub b{font:700 14px Inter}.pub a{font:13px Inter;color:var(--b2)}

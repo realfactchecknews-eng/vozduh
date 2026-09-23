@@ -1,5 +1,5 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Редакция — Воздух</title><meta name="robots" content="noindex"><link rel="icon" href="favicon.svg"><link rel="alternate icon" href="favicon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="stylesheet" href="style.css?v=24"></head><body>
+<title>Редакция — Воздух</title><meta name="robots" content="noindex"><link rel="icon" href="favicon.svg"><link rel="alternate icon" href="favicon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="stylesheet" href="style.css?v=25"></head><body>
 <main class="wrap" id="root" style="max-width:1280px">
 <div id="gate" style="max-width:340px;margin:60px auto"><h1 style="font:900 28px Inter">Вход в редакцию</h1>
 <form id="lg" class="cform"><input type="password" id="pw" placeholder="Пароль" autofocus><button>Войти</button></form></div>
@@ -47,12 +47,12 @@
  <div class="sect">Как увидят на сайте</div>
  <div id="pv" class="pv"></div>
  <div class="sect" style="margin-top:24px">Как увидят в Telegram</div>
- <div class="tgpv"><img id="tgimg" alt=""><div class="tgtxt"><b id="tgt"></b><p id="tgl"></p><span id="tgu"></span></div></div>
+ <div class="tgpv"><img id="tgimg" alt=""><div class="tgtxt" id="tgbody"></div></div>
  <div class="sect" style="margin-top:24px">Опубликованные</div>
  <div id="list" class="pubs"></div>
 </div></div></div></main>
 
-<script src="news.js?v=24"></script><script src="app.js?v=24"></script><script>
+<script src="news.js?v=25"></script><script src="app.js?v=25"></script><script>
 const K=()=>localStorage.getItem('vk');
 const call=async(p,d)=>{const r=await fetch(API+p,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...d,key:K()})});
  const j=await r.json();if(!r.ok)throw Error(j.error||'ошибка');return j};
@@ -100,14 +100,23 @@ function draw(){const x=F();
  <p style="color:#333">${esc(x.lead)}</p>${COVER?`<img src="${COVER}" style="width:100%;border-radius:8px">`:''}
  ${x.body.map(p=>p==='QUOTE'?`<blockquote style="font-size:16px">${esc(x.quote)}</blockquote>`:`<p style="font-size:15px">${esc(p)}</p>`).join('')}`;
  tgimg.src=COVER||'';tgimg.style.display=COVER?'block':'none';
- tgt.textContent=x.title;tgl.textContent=x.lead;tgu.textContent=SITE+'article.html?n=…';}
+ const ic={'Стримы':'🎥','Скандалы':'🔥','Общество':'🏛','Расследования':'🔎'}[x.tag]||'📰';
+ const p=(x.body||[]).filter(t=>t&&t!=='QUOTE')[0]||'';
+ tgbody.innerHTML=`<div class="h">${ic} <b>${esc((x.tag||'').toUpperCase())}</b>${x.flag?'  ·  '+esc(x.flag.toUpperCase()):''}</div>
+  <b>${esc(x.title)}</b><p>${esc(x.lead)}</p><p>${esc(p.slice(0,320))}</p>
+  ${x.quote?`<div class="q">${esc(x.quote)}</div>`:''}
+  <div class="sep">➖➖➖➖➖➖➖➖➖➖</div>
+  <p>👁 ${esc(x.views||'')}  ·  💬 ${(x.comments||[]).length}</p>
+  <a>📖 Читать полностью на сайте</a><br><a>💬 Предложить новость</a>
+  <p class="hash">#воздух ${x.tag?'#'+{'Стримы':'стримы','Скандалы':'скандал','Общество':'общество','Расследования':'расследование'}[x.tag]:''}</p>`;}
 f.oninput=draw;
 
 // ---- публикация
 pub.onclick=async()=>{const x=F();if(!x.title)return toast('Нужен заголовок');busy(pub,1);
  try{let url=SITE;
   if(toSite.checked){const s=await call('/save',{news:x,site:SITE});url=s.url;SHORT=s.short}
-  if(toTg.checked)await call('/post',{title:x.title,lead:x.lead,url:SHORT||url,image:COVER,tag:x.tag,flag:x.flag,views:x.views});
+  if(toTg.checked)await call('/post',{title:x.title,lead:x.lead,url:SHORT||url,image:COVER,
+    tag:x.tag,flag:x.flag,views:x.views,quote:x.quote,body:x.body,comments:(x.comments||[]).length});
   toast('Опубликовано');loadList()}
  catch(e){toast(e.message)}finally{busy(pub,0,'Опубликовать')}};
 

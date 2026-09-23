@@ -141,12 +141,26 @@ Instruction: ${prompt||'make it look like a candid news photo'}`;
    if (path === '/post') {
     const {title='',lead='',url='',image=''} = b;
     const ICON = {'Стримы':'🎥','Скандалы':'🔥','Общество':'🏛','Расследования':'🔎'};
-    const meta = [b.tag ? `${ICON[b.tag]||'📰'} ${esc(b.tag)}` : '', b.views ? `👁 ${esc(b.views)}` : '']
-      .filter(Boolean).join('  ·  ');
-    const caption = `<b>${esc(title)}</b>\n\n`
-      + `${esc(lead)}\n\n`
-      + (meta ? `<i>${meta}</i>\n\n` : '')
-      + `📖 <a href="${esc(url)}">Читать полностью</a>   ·   💬 <a href="https://t.me/vozduhnews_bot">Предложить новость</a>`;
+    const TAGH = {'Стримы':'стримы','Скандалы':'скандал','Общество':'общество','Расследования':'расследование'};
+    const cut = (t,n) => { t=String(t||'').trim(); return t.length>n ? t.slice(0,n).replace(/\s+\S*$/,'')+'…' : t };
+    const head = [b.tag ? `${ICON[b.tag]||'📰'} <b>${esc(String(b.tag).toUpperCase())}</b>` : '',
+                  b.flag ? esc(String(b.flag).toUpperCase()) : ''].filter(Boolean).join('  ·  ');
+    const para = cut((b.body||[]).filter(p=>p&&p!=='QUOTE'&&p!=='REACTS')[0]||'', 320);
+    const quote = b.quote ? `<blockquote>${esc(cut(b.quote,220))}</blockquote>` : '';
+    const stats = [b.views?`👁 ${esc(b.views)}`:'', b.comments?`💬 ${b.comments}`:''].filter(Boolean).join('  ·  ');
+    const tags = ['#воздух', b.tag?'#'+TAGH[b.tag]:''].filter(Boolean).join(' ');
+    const caption = [
+      head,
+      `<b>${esc(title)}</b>`,
+      esc(lead),
+      para ? esc(para) : '',
+      quote,
+      '➖➖➖➖➖➖➖➖➖➖',
+      stats,
+      `📖 <a href="${esc(url)}">Читать полностью на сайте</a>`,
+      `💬 <a href="https://t.me/vozduhnews_bot">Предложить новость</a>`,
+      tags
+    ].filter(Boolean).join('\n\n').slice(0,1020);
     const api = `https://api.telegram.org/bot${env.TG_TOKEN}/`;
     let res;
     if (image.startsWith('data:')) {
