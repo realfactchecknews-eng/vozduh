@@ -2,12 +2,12 @@
 <title>Воздух — новости</title><meta name="description" content="Сатирическое издание «Воздух»">
 <meta property="og:site_name" content="Воздух"><meta property="og:title" content="Воздух — новости">
 <meta property="og:description" content="Сатирическое издание. Все новости выдуманы."><meta property="og:image" content="https://vozduhnews.ru/stream.jpg">
-<meta name="twitter:card" content="summary_large_image"><link rel="icon" href="favicon.svg"><link rel="alternate icon" href="favicon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="stylesheet" href="style.css?v=22"></head><body>
+<meta name="twitter:card" content="summary_large_image"><link rel="icon" href="favicon.svg"><link rel="alternate icon" href="favicon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="stylesheet" href="style.css?v=28"></head><body>
 <main class="wrap"><div class="grid"><div id="lead"></div>
 <aside class="reveal"><h4>Самое читаемое</h4><div class="side" id="mostread"></div>
 <div class="promo reveal"><b>«Воздух» в Telegram</b><p>Срочные новости раньше всех</p><a class="tgbtn" id="promo" target="_blank">Подписаться</a></div></aside></div>
 <div class="sect" style="margin-top:48px">Лента</div><div class="cards" id="feed"></div></main>
-<script src="news.js?v=22"></script><script src="app.js?v=22"></script><script>
+<script src="news.js?v=28"></script><script src="app.js?v=28"></script><script>
 ready.then(()=>{lead.innerHTML=card(NEWS[0],1);
 document.getElementById("mostread").innerHTML=NEWS.concat(NEWS).slice(0,5).map(x=>`<a href="article.html?n=${x.slug}">${esc(x.title)}</a>`).join('');
 feed.innerHTML=NEWS.slice(1).map(x=>card(x)).join('')||'<p>Скоро</p>';
