@@ -1,3 +1,19 @@
+// автообновление: если на сервере новая версия — страница перезагрузится сама
+(function(){
+ const me=document.currentScript||[...document.scripts].find(x=>/app\.js/.test(x.src));
+ const cur=(me&&me.src.match(/v=(\d+)/)||[])[1];
+ if(!cur)return;
+ const check=()=>fetch('version.txt?t='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(v=>{
+   v=v.trim();
+   if(v&&v!==cur){
+     const u=new URL(location.href);u.searchParams.set('v',v);
+     console.log('Воздух: новая версия '+v+', перезагружаю');
+     location.replace(u.toString());
+   }}).catch(()=>{});
+ setInterval(check,60000);
+ addEventListener('focus',check);
+})();
+
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
 const get=(k,d)=>new URLSearchParams(location.search).get(k)||d;
