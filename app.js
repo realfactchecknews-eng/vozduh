@@ -49,10 +49,16 @@ function cover(src,title,cb){const im=new Image();im.crossOrigin='anonymous';im.
  g.fillStyle='#fff';g.fillText('ВОЗ',48,H-46);g.fillStyle='#4b93ff';g.fillText('ДУХ',48+w1,H-46);
  g.font='600 22px Inter,system-ui';g.fillStyle='rgba(255,255,255,.6)';g.textAlign='right';
  g.fillText('vozduhnews.ru',W-48,H-46);g.textAlign='left';
- g.fillStyle='#fff';g.font='900 56px Inter,system-ui';
- const words=String(title).split(' ');let line='',y=H-150;const lines=[];
+ // заголовок: максимум две строки, шрифт подбирается под длину
+ const t0=String(title).trim();
+ const size=t0.length>90?42:t0.length>60?48:56;
+ g.fillStyle='#fff';g.font=`900 ${size}px Inter,system-ui`;
+ const words=t0.split(' ');let line='';const lines=[];
  words.forEach(wd=>{const t=line?line+' '+wd:wd;if(g.measureText(t).width>W-96){lines.push(line);line=wd}else line=t});
- lines.push(line);lines.slice(-3).forEach((l,i,a)=>g.fillText(l,48,y-(a.length-1-i)*66));
+ lines.push(line);
+ let show=lines.slice(0,2);
+ if(lines.length>2){let last=show[1];while(g.measureText(last+'…').width>W-96)last=last.slice(0,-1);show[1]=last.trim()+'…'}
+ const y0=H-132;show.forEach((l,i)=>g.fillText(l,48,y0-(show.length-1-i)*(size+10)));
  cb(c.toDataURL('image/jpeg',.88))};im.onerror=()=>cb(src);im.src=src}
 
 // просмотры растут со временем: быстро в первый час, потом медленно

@@ -6,9 +6,15 @@ const json=(o,s=200)=>new Response(JSON.stringify(o),{status:s,headers:{'content
 const PHOTO='amateur photo taken on an old smartphone, slightly blurry, harsh direct flash, uneven white balance, mundane everyday russian setting, cluttered background, imperfect framing, visible noise and compression artifacts, unflattering angle, looks like a real photo someone sent in a chat, absolutely no text or watermarks. Scene: ';
 const STYLE=`Ты редактор сатирического издания «Воздух».
 Пиши так, чтобы текст было не отличить от настоящей новости РИА или РБК: сухой протокольный язык, конкретные числа, проценты, даты, должности, названия ведомств и «институтов», ссылки на «источник, близкий к ситуации». Абсурд прячется в сути, а не в стиле: ни одного шутливого слова, ни одного восклицательного знака, никакой иронии в интонации. Читатель должен понять, что это шутка, только вникнув в смысл. Пишешь абсурдные новости-пранки про друзей автора — по-доброму, без оскорблений, мата, политики и намёков на преступления. Стиль серьёзного новостного агентства: сухой тон, ссылки на «источники» и «экспертов», нелепая суть. Русский язык.
-Верни ТОЛЬКО JSON без markdown:
-{"title":"заголовок до 90 знаков","lead":"подзаголовок одним предложением","body":["абзац","абзац","абзац"],"quote":"цитата эксперта или очевидца в кавычках-ёлочках","tag":"Стримы|Скандалы|Общество|Расследования","flag":"короткая плашка, например Эксклюзив","views":"например 1,2 млн","comments":[["имя","комментарий"]] — 8-12 штук, разные люди: кто-то возмущён, кто-то шутит, кто-то не понял новость, кто-то пишет не по теме,
-"live":[["07:25","что произошло"]] — 4-6 строк хроники события по времени, от раннего к позднему}`;
+Верни ТОЛЬКО JSON без markdown, строго по этой схеме:
+{"title":"","lead":"","body":["",""],"quote":"","tag":"","flag":"","views":"","comments":[["",""]],"live":[["",""]]}
+
+Пояснения к полям:
+title — заголовок до 90 знаков; lead — подзаголовок одним предложением; body — 3-4 абзаца;
+quote — цитата эксперта или очевидца в кавычках-ёлочках; tag — одно из: Стримы, Скандалы, Общество, Расследования;
+flag — короткая плашка, например Эксклюзив; views — например "1,2 млн";
+comments — от 8 до 12 пар [имя, текст]: разные люди, кто-то возмущён, кто-то шутит, кто-то не понял новость, кто-то пишет не по теме;
+live — от 4 до 6 пар [время, что произошло] в формате "07:25", хроника события от раннего к позднему.`;
 
 export default {
  async fetch(req, env) {
@@ -77,8 +83,8 @@ export default {
     const pro = env.OR_KEY && b.model !== 'free';
     const r = await fetch(pro?'https://openrouter.ai/api/v1/chat/completions':'https://api.groq.com/openai/v1/chat/completions',{
      method:'POST', headers:{'content-type':'application/json',authorization:`Bearer ${pro?env.OR_KEY:env.GROQ_KEY}`},
-     body:JSON.stringify({model:pro?'openai/gpt-5-mini':'openai/gpt-oss-120b',temperature:1,response_format:{type:'json_object'},
-      messages:[{role:'system',content:STYLE},{role:'user',content:'Тема новости: '+topic}]})});
+     body:JSON.stringify({model:pro?'openai/gpt-5-mini':'openai/gpt-oss-120b',temperature:1,max_tokens:4000,response_format:{type:'json_object'},
+      messages:[{role:'system',content:STYLE},{role:'user',content:'Тема новости: '+topic+'\n\nВерни все поля схемы. Обязательно заполни comments (8-12 штук) и live (4-6 строк) — без них ответ считается неполным.'}]})});
     const d = await r.json();
     if (!r.ok) return json({error:d.error?.message||'Groq не ответил'},502);
     const raw = d.choices[0].message.content.replace(/^\s*```(?:json)?|```\s*$/g,'').trim();
@@ -135,13 +141,12 @@ Instruction: ${prompt||'make it look like a candid news photo'}`;
    if (path === '/post') {
     const {title='',lead='',url='',image=''} = b;
     const ICON = {'Стримы':'🎥','Скандалы':'🔥','Общество':'🏛','Расследования':'🔎'};
-    const flag = b.flag ? b.flag.toUpperCase() : 'СРОЧНО';
-    const rub = b.tag ? `${ICON[b.tag]||'📰'} ${esc(b.tag)}` : '';
-    const views = b.views ? ` · 👁 ${esc(b.views)}` : '';
-    const caption = `🔴 <b>${esc(flag)}</b>\n\n<b>${esc(title)}</b>\n\n${esc(lead)}\n\n`
-      + `${rub}${views}\n\n`
-      + `📖 <a href="${esc(url)}"><b>ЧИТАТЬ ПОЛНОСТЬЮ</b></a>\n`
-      + `💬 <a href="https://t.me/vozduhnews_bot"><b>ПРЕДЛОЖИТЬ НОВОСТЬ</b></a>`;
+    const meta = [b.tag ? `${ICON[b.tag]||'📰'} ${esc(b.tag)}` : '', b.views ? `👁 ${esc(b.views)}` : '']
+      .filter(Boolean).join('  ·  ');
+    const caption = `<b>${esc(title)}</b>\n\n`
+      + `${esc(lead)}\n\n`
+      + (meta ? `<i>${meta}</i>\n\n` : '')
+      + `📖 <a href="${esc(url)}">Читать полностью</a>   ·   💬 <a href="https://t.me/vozduhnews_bot">Предложить новость</a>`;
     const api = `https://api.telegram.org/bot${env.TG_TOKEN}/`;
     let res;
     if (image.startsWith('data:')) {
