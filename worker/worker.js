@@ -26,7 +26,7 @@ export default {
    const n = all.find(x=>x.slug===slug);
    if (!n) return Response.redirect('https://vozduhnews.ru/',302);
    const url = 'https://vozduhnews.ru/article.html?n='+slug;
-   const img = n.img && n.img.startsWith('http') ? n.img : new URL(req.url).origin+'/img/'+slug;
+   const img = n.img && n.img.startsWith('http') ? n.img : HOST_FAST+'/img/'+slug;
    const html = `<!doctype html><html lang="ru"><head><meta charset="utf-8">
 <title>${esc(n.title)} — Воздух</title>
 <meta property="og:site_name" content="Воздух"><meta property="og:type" content="article">
@@ -129,7 +129,7 @@ Instruction: ${prompt||'make it look like a candid news photo'}`;
     const all = JSON.parse(await env.DB.get('news')||'[]');
     all.unshift(x);
     await env.DB.put('news', JSON.stringify(all.slice(0,60)));
-    return json({ok:true, slug:x.slug, url:(b.site||'')+'article.html?n='+x.slug, short:API_SELF(req)+'/n/'+x.slug});
+    return json({ok:true, slug:x.slug, url:(b.site||'')+'article.html?n='+x.slug, short:HOST_NICE+'/n/'+x.slug});
    }
 
    if (path === '/delete') {
@@ -190,5 +190,7 @@ async function gemini(env, content){
  if (!im) throw new Error(d.error?.message || 'модель не вернула картинку');
  return im;
 }
-const API_SELF = req => 'https://n.vozduhnews.ru';   // короткий адрес для ссылок и картинок
+const HOST_FAST = 'https://vozduh.realfactchecknews.workers.dev';  // тяжёлые ответы: список, картинки
+const HOST_NICE = 'https://n.vozduhnews.ru';                       // короткие ссылки для Telegram
+const API_SELF = req => HOST_FAST;
 const esc = s => String(s).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
