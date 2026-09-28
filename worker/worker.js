@@ -190,5 +190,5 @@ async function gemini(env, content){
  if (!im) throw new Error(d.error?.message || 'модель не вернула картинку');
  return im;
 }
-const API_SELF = req => new URL(req.url).origin;
+const API_SELF = req => 'https://n.vozduhnews.ru';   // короткий адрес для ссылок и картинок
 const esc = s => String(s).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
