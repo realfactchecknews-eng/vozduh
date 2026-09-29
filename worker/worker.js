@@ -3,6 +3,25 @@
 const CORS={'access-control-allow-origin':'*','access-control-allow-headers':'content-type','access-control-allow-methods':'POST,OPTIONS'};
 const json=(o,s=200)=>new Response(JSON.stringify(o),{status:s,headers:{'content-type':'application/json',...CORS}});
 
+const NAMES={
+ 'Старый Бог (вовчик)':'начинает или заканчивает комментарий словами «старый бог здесь», говорит грубо, с матом (мат не в адрес людей, а сам по себе), путано и с опечатками',
+ 'Джиган':'всегда сводит разговор к семье и к автомату: «а я за семью», «взял бы автомат», говорит коротко и пафосно',
+ 'Артемий Лебедев':'язвительный, пишет про дизайн и вкус; обязательно подкалывает пользователя Екатерину Мизулину, обращаясь к ней по имени',
+ 'Екатерина Мизулина':'отвечает Лебедеву обиженно и строго, обещает проверки и жалобы, всё принимает всерьёз',
+ 'Имран':'пишет только о том, что он жирный и надо худеть, привязывая это к любой новости',
+ 'Дмитрий Уткин':'говорит как спортивный комментатор, с восклицаниями и метафорами матча',
+ 'Катя Рыкова':'въедливо уточняет детали и цитирует текст новости, отвечает другим через @имя',
+ 'Василий Блаженный':'говорит архаично и загадочно, как юродивый, короткими притчами',
+ 'Роман Никулин':'зануда, требует документов, ссылок и регламентов',
+ 'Тимур Джелетян':'пишет с юга, эмоционально, про уважение и братьев',
+ 'Егор Михайличенко':'скептик, во всём видит накрутку и заказуху',
+ 'Виталий Михайлович':'пишет как учитель: назидательно, про дисциплину и воспитание',
+ 'Илья Фомин':'путает себя с героем новости, оправдывается',
+ 'Мистер Бист':'обещает раздать деньги и устроить челлендж по мотивам новости'
+};
+// все обязаны покрасить бороду Лебедеву
+const BEARD='Как минимум двое из комментаторов (кроме самого Лебедева) между делом требуют, чтобы Артемий Лебедев покрасил бороду в жёлтый.';
+const pickNames = n => Object.keys(NAMES).sort(()=>Math.random()-0.5).slice(0,n);
 const PHOTO='amateur photo taken on an old smartphone, slightly blurry, harsh direct flash, uneven white balance, mundane everyday russian setting, cluttered background, imperfect framing, visible noise and compression artifacts, unflattering angle, looks like a real photo someone sent in a chat, absolutely no text or watermarks. Scene: ';
 const STYLE=`Ты редактор сатирического издания «Воздух».
 Пиши так, чтобы текст было не отличить от настоящей новости РИА или РБК: сухой протокольный язык, конкретные числа, проценты, даты, должности, названия ведомств и «институтов», ссылки на «источник, близкий к ситуации». Абсурд прячется в сути, а не в стиле: ни одного шутливого слова, ни одного восклицательного знака, никакой иронии в интонации. Читатель должен понять, что это шутка, только вникнув в смысл. Пишешь абсурдные новости-пранки про друзей автора — по-доброму, без оскорблений, мата, политики и намёков на преступления. Стиль серьёзного новостного агентства: сухой тон, ссылки на «источники» и «экспертов», нелепая суть. Русский язык.
@@ -13,10 +32,19 @@ const STYLE=`Ты редактор сатирического издания «�
 title — заголовок до 90 знаков; lead — подзаголовок одним предложением; body — 3-4 абзаца;
 quote — цитата эксперта или очевидца в кавычках-ёлочках; tag — одно из: Стримы, Скандалы, Общество, Расследования;
 flag — короткая плашка, например Эксклюзив; views — например "1,2 млн";
-comments — от 8 до 12 пар [имя, текст]: разные люди, кто-то возмущён, кто-то шутит, кто-то не понял новость, кто-то пишет не по теме;
+comments — пары [имя, текст]. Имена бери ТОЛЬКО из списка, который придёт в запросе, каждое по одному разу и ровно в том написании. Манера у всех разная: кто-то возмущён, кто-то шутит, кто-то не понял новость, кто-то пишет не по теме, кто-то отвечает предыдущему комментатору. Длина от нескольких слов до двух предложений;
 live — от 4 до 6 пар [время, что произошло] в формате "07:25", хроника события от раннего к позднему.`;
 
 export default {
+ async scheduled(ev, env, ctx) {                 // раз в сутки: копия ленты, храним неделю
+  const cur = await env.DB.get('news');
+  if (!cur) return;
+  const day = new Date().toISOString().slice(0,10);
+  await env.DB.put('backup_'+day, cur);
+  const l = await env.DB.list({prefix:'backup_2'});
+  const old = l.keys.map(k=>k.name).sort().slice(0,-7);
+  for (const k of old) await env.DB.delete(k);
+ },
  async fetch(req, env) {
   if (req.method === 'OPTIONS') return new Response(null,{headers:CORS});
   const path = new URL(req.url).pathname;
@@ -84,7 +112,11 @@ export default {
     const r = await fetch(pro?'https://openrouter.ai/api/v1/chat/completions':'https://api.groq.com/openai/v1/chat/completions',{
      method:'POST', headers:{'content-type':'application/json',authorization:`Bearer ${pro?env.OR_KEY:env.GROQ_KEY}`},
      body:JSON.stringify({model:pro?'openai/gpt-5-mini':'openai/gpt-oss-120b',temperature:1,max_tokens:4000,response_format:{type:'json_object'},
-      messages:[{role:'system',content:STYLE},{role:'user',content:'Тема новости: '+topic+'\n\nВерни все поля схемы. Обязательно заполни comments (8-12 штук) и live (4-6 строк) — без них ответ считается неполным.'}]})});
+      messages:[{role:'system',content:STYLE},{role:'user',content:'Тема новости: '+topic+'\n\nКомментаторы под этой новостью — используй ровно этих, по одному комментарию на каждого, в характере, порядок перемешай:\n'
+        + (()=>{const p=pickNames(8+Math.floor(Math.random()*4));
+                if(p.includes('Артемий Лебедев')&&!p.includes('Екатерина Мизулина'))p.push('Екатерина Мизулина');
+                return p.map(n=>`— ${n}: ${NAMES[n]}`).join('\n')})()
+        + '\n\n'+BEARD+'\n\nВерни все поля схемы. Обязательно заполни comments и live (4-6 строк) — без них ответ считается неполным.'}]})});
     const d = await r.json();
     if (!r.ok) return json({error:d.error?.message||'Groq не ответил'},502);
     const raw = d.choices[0].message.content.replace(/^\s*```(?:json)?|```\s*$/g,'').trim();
@@ -126,16 +158,38 @@ Instruction: ${prompt||'make it look like a candid news photo'}`;
      await env.DB.put('img_'+x.slug, x.img);
      x.img = API_SELF(req)+'/img/'+x.slug;
     }
-    const all = JSON.parse(await env.DB.get('news')||'[]');
+    const prev = await env.DB.get('news')||'[]';
+    await env.DB.put('backup_last', prev);
+    const all = JSON.parse(prev);
     all.unshift(x);
     await env.DB.put('news', JSON.stringify(all.slice(0,60)));
     return json({ok:true, slug:x.slug, url:(b.site||'')+'article.html?n='+x.slug, short:HOST_NICE+'/n/'+x.slug});
    }
 
    if (path === '/delete') {
-    const all = JSON.parse(await env.DB.get('news')||'[]');
+    const prev = await env.DB.get('news')||'[]';
+    await env.DB.put('backup_last', prev);
+    const all = JSON.parse(prev);
     await env.DB.put('news', JSON.stringify(all.filter(n=>n.slug!==b.slug)));
     return json({ok:true});
+   }
+
+   if (path === '/backups') {                    // список копий
+    const l = await env.DB.list({prefix:'backup_'});
+    const out = [];
+    for (const k of l.keys) {
+     const v = await env.DB.get(k.name);
+     out.push({key:k.name, news: v?JSON.parse(v).length:0, bytes:(v||'').length});
+    }
+    return json(out.sort((a,b)=>a.key<b.key?1:-1));
+   }
+
+   if (path === '/restore') {                    // откат к копии
+    const v = await env.DB.get(String(b.backup||''));
+    if (!v) return json({error:'копия не найдена'},404);
+    await env.DB.put('backup_before_restore', await env.DB.get('news')||'[]');
+    await env.DB.put('news', v);
+    return json({ok:true, news:JSON.parse(v).length});
    }
 
    if (path === '/post') {

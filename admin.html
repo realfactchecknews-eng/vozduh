@@ -1,5 +1,5 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Редакция — Воздух</title><meta name="robots" content="noindex"><link rel="icon" href="favicon.svg"><link rel="alternate icon" href="favicon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="stylesheet" href="style.css?v=32"></head><body>
+<title>Редакция — Воздух</title><meta name="robots" content="noindex"><link rel="icon" href="favicon.svg"><link rel="alternate icon" href="favicon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="stylesheet" href="style.css?v=33"></head><body>
 <main class="wrap" id="root" style="max-width:1280px">
 <div id="gate" style="max-width:340px;margin:60px auto"><h1 style="font:900 28px Inter">Вход в редакцию</h1>
 <form id="lg" class="cform"><input type="password" id="pw" placeholder="Пароль" autofocus><button>Войти</button></form></div>
@@ -48,11 +48,12 @@
  <div id="pv" class="pv"></div>
  <div class="sect" style="margin-top:24px">Как увидят в Telegram</div>
  <div class="tgpv"><img id="tgimg" alt=""><div class="tgtxt" id="tgbody"></div></div>
+ <div class="sect" style="margin-top:24px">Резервные копии</div><div id="bk" class="pubs"></div>
  <div class="sect" style="margin-top:24px">Опубликованные</div>
  <div id="list" class="pubs"></div>
 </div></div></div></main>
 
-<script src="news.js?v=32"></script><script src="app.js?v=32"></script><script>
+<script src="news.js?v=33"></script><script src="app.js?v=33"></script><script>
 const K=()=>localStorage.getItem('vk');
 const call=async(p,d)=>{const r=await fetch(API+p,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...d,key:K()})});
  const j=await r.json();if(!r.ok)throw Error(j.error||'ошибка');return j};
@@ -65,7 +66,7 @@ lg.onsubmit=async e=>{e.preventDefault();localStorage.setItem('vk',pw.value);
  try{await call('/list',{});}catch{} 
  try{await call('/text',{topic:'проверка доступа',probe:1})}catch(err){if(/пароль/.test(err.message)){toast('Неверный пароль');return}}
  show()};
-const show=()=>{gate.hidden=1;panel.hidden=0;draw();loadList()};
+const show=()=>{gate.hidden=1;panel.hidden=0;draw();loadList();loadBackups()};
 exit.onclick=()=>{localStorage.removeItem('vk');location.reload()};
 
 // ---- текст
@@ -117,8 +118,20 @@ pub.onclick=async()=>{const x=F();if(!x.title)return toast('Нужен заго�
   if(toSite.checked){const s=await call('/save',{news:x,site:SITE});url=s.url;SHORT=s.short}
   if(toTg.checked)await call('/post',{title:x.title,lead:x.lead,url:SHORT||url,image:COVER,
     tag:x.tag,flag:x.flag,views:x.views,quote:x.quote,body:x.body,comments:(x.comments||[]).length});
-  toast('Опубликовано');loadList()}
+  toast('Опубликовано');loadList();loadBackups()}
  catch(e){toast(e.message)}finally{busy(pub,0,'Опубликовать')}};
+
+async function loadBackups(){
+ try{const r=await call('/backups',{});
+  bk.innerHTML=r.length?r.map(b=>`<div class="pub" style="grid-template-columns:1fr auto">
+    <div><b>${esc(b.key.replace('backup_','').replace('last','последняя перед изменением').replace('before_restore','перед откатом'))}</b>
+    <br><span style="font:13px Inter;color:var(--m)">новостей: ${b.news}</span></div>
+    <button type="button" class="showmore" data-bk="${esc(b.key)}" style="margin:0">Откатить</button></div>`).join('')
+   :'<p style="color:var(--m)">Копий пока нет, первая появится ночью</p>';
+  bk.querySelectorAll('[data-bk]').forEach(el=>el.onclick=async()=>{
+    if(!confirm('Вернуть ленту к этой копии? Текущая версия сохранится отдельной копией.'))return;
+    const r=await call('/restore',{backup:el.dataset.bk});toast('Откатил, новостей: '+r.news);loadList();loadBackups()});
+ }catch(e){bk.innerHTML='<p style="color:var(--m)">Не удалось загрузить копии</p>'}}
 
 async function loadList(){const r=await fetch(API+'/list').then(r=>r.json());
  list.innerHTML=r.map(n=>`<div class="pub"><img src="${n.img||''}"><div><b>${esc(n.title)}</b><br>

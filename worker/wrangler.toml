@@ -11,3 +11,6 @@ binding = "AI"
 [[kv_namespaces]]
 binding = "DB"
 id = "02092e1185784db7a951a0df4088010f"
+
+[triggers]
+crons = ["0 3 * * *"]
